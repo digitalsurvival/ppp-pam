@@ -14,7 +14,7 @@
  */
 
 #ifndef MP_IOFUNC
-#define MP_IOFUNC     0  /* include mp_print() ?                */
+#define MP_IOFUNC     1  /* include mp_print() ?                */
 #endif
 
 #ifndef MP_MODARITH
@@ -38,7 +38,7 @@
 #endif
 
 #ifndef MP_CRYPTO
-#define MP_CRYPTO     0  /* erase memory on free?               */
+#define MP_CRYPTO     1  /* erase memory on free?               */
 #endif
 
 #ifndef MP_ARGCHK
