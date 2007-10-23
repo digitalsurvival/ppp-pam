@@ -52,7 +52,7 @@ typedef struct {
 typedef struct stk {
   mp_int      *value; /* the value at this position of the stack     */
   struct stk  *link;  /* the item below this one on the stack        */
-} stack_t;
+} stack2_t;
 
 /* A token is the type returned by the lexical analyzer              */
 typedef struct {
@@ -72,7 +72,7 @@ typedef struct {
 
 int            obase = 10; /* current output radix           */
 
-stack_t       *s_top; /* top of the evaluation stack    */
+stack2_t       *s_top; /* top of the evaluation stack    */
 int            s_num; /* number of items on the stack   */
 
 /* This variable holds the "memory" of the calculator; the 'mem'
@@ -100,7 +100,7 @@ int invmod(char *cmd);
 int cmds(char *cmd);
 
 /* A useful function for printing out the stack */
-void recprint(stack_t *stk);
+void recprint(stack2_t *stk);
 
 /* 
 
@@ -356,7 +356,7 @@ int pstack(char *cmd)
 
 } /* end pstack() */
 
-void recprint(stack_t *stk)
+void recprint(stack2_t *stk)
 {
   unsigned char   *buf;
   int     len;
@@ -657,7 +657,7 @@ void  stack_clear(void)
 
 void  stack_push(mp_int *value)
 {
-  stack_t *elt;
+  stack2_t *elt;
 
   elt = malloc(sizeof(*elt));
   elt->value = value;
@@ -673,7 +673,7 @@ void  stack_pop(int n)
     n = s_num;
 
   while(n > 0) {
-    stack_t  *elt = s_top->link;
+    stack2_t  *elt = s_top->link;
 
     free(s_top);
     s_top = elt;

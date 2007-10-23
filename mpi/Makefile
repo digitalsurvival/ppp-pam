@@ -40,7 +40,7 @@ DIGIT_SIZE=2
 
 # Create an archive of the MPI library and the primality testing code
 lib: mpi.o mpprime.o
-	ar crf libmpi.a mpi.o mpprime.o
+	ar cr libmpi.a mpi.o mpprime.o
 	$(RANLIB) libmpi.a
 
 mpi.o: logtab.h mpi-config.h mpi-types.h mpi.h mpi.c
