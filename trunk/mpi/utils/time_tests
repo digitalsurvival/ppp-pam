@@ -1,0 +1,111 @@
+#!/bin/sh
+
+# 
+# time_tests
+#
+# Simple timing test for the MPI library.  Basically, we use prime
+# generation as a timing test, since it exercises most of the pathways
+# of the library fairly heavily.  The 'primegen' tool outputs a line
+# summarizing timing results.  We gather these and process them for
+# statistical information, which is collected into a file.
+#
+# by Michael J. Fromberger <sting@linguist.dartmouth.edu>
+# Copyright (C) 2000 Michael J. Fromberger, All Rights Reserved.
+#
+# $Id: time_tests,v 1.1 2004/02/08 04:28:33 sting Exp $
+#
+
+# Avoid using built-in shell echoes
+ECHO=/bin/echo
+
+# Use a fixed seed so timings will be more consistent
+# This one is the 11th-18th decimal digits of 'e'
+export SEED=45904523
+
+#------------------------------------------------------------------------
+
+$ECHO ""
+$ECHO "** Running timing tests for MPI library"
+$ECHO ""
+
+$ECHO "Bringing 'metime' up to date ... "
+if make metime ; then
+    :
+else 
+    $ECHO ""
+    $ECHO "Make failed to build metime."
+    $ECHO ""
+    exit 1
+fi
+
+if [ ! -x ./metime ] ; then 
+    $ECHO ""
+    $ECHO "Cannot find 'metime' program, testing cannot continue."
+    $ECHO ""
+    exit 1
+fi
+
+#------------------------------------------------------------------------
+
+$ECHO "Bringing 'primegen' up to date ... "
+if make primegen ; then
+    :
+else
+    $ECHO ""
+    $ECHO "Make failed to build primegen."
+    $ECHO ""
+    exit 1
+fi
+
+if [ ! -x ./primegen ] ; then
+    $ECHO ""
+    $ECHO "Cannot find 'primegen' program, testing cannot continue."
+    $ECHO ""
+    exit 1
+fi
+
+#------------------------------------------------------------------------
+
+rm -f timing-results.txt
+touch timing-results.txt
+
+sizes="128 192 256 320 384 448 512 640 768 896 1024"
+ntests=200
+
+trap 'echo "oop!";rm -f tt*.tmp timing-results.txt;exit 0' INT HUP
+
+$ECHO ""
+$ECHO "-- Modular exponentiation"
+$ECHO ""
+$ECHO "Modular exponentiation:" >> timing-results.txt
+
+$ECHO "Running $ntests modular exponentiations per test:"
+for size in $sizes ; do
+    $ECHO "- Gathering statistics for $size bits ... "
+    secs=`./metime $ntests $size | tail -1 | awk '{print $2}'`
+    $ECHO "$size: " $secs >> timing-results.txt
+    tail -1 timing-results.txt
+done
+
+$ECHO "<done>";
+
+sizes="128 192 256 320 384 448 512"
+ntests=200
+
+$ECHO "\n-- Prime generation\n"
+$ECHO "Prime generation:" >> timing-results.txt
+
+$ECHO "Generating $ntests prime values per test:"
+for size in $sizes ; do
+    $ECHO "- Gathering statistics for $size bits ... "
+    ./primegen $size $ntests | grep ticks | awk '{print $7}' | tr -d '(' > tt$$.tmp
+    $ECHO "$size:" >> timing-results.txt
+    perl ../stats tt$$.tmp >> timing-results.txt
+    tail -1 timing-results.txt
+    rm -f tt$$.tmp
+done
+
+$ECHO "<done>"
+
+exit 0
+    
