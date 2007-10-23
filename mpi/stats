@@ -1,0 +1,57 @@
+#!/usr/linguist/bin/perl
+
+#
+# Treat each line as a sequence of comma and/or space delimited
+# floating point numbers, and compute basic statistics on them.
+# These are written to standard output
+#
+# $Id: stats,v 1.1 2004/02/08 04:29:30 sting Exp $
+#
+
+$min = 1.7976931348623157E+308;
+$max = 2.2250738585072014E-308;
+$sum = $num = 0;
+
+# Read in all the values, and find the minimum, maximum, and sum of
+# all the values
+while(<>) {
+    chomp;
+
+    @nums = split(/[\s,]+/, $_);
+    next if($#nums < 0);
+
+    $num += scalar @nums;
+    foreach (@nums) {
+	$min = $_ if($_ < $min);
+	$max = $_ if($_ > $max);
+	$sum += $_;
+	push(@values, $_);
+    }
+}
+
+# Now, given the numbers, compute the mean and median so that we can
+# get the variance and standard deviation
+if($num) {
+    $mean = $sum / $num;
+} else {
+    $min = $max = 0;
+}
+
+@values = sort { $a <=> $b } @values; # Sort values for selecting median
+$median = $values[int($num / 2)];
+$thirdq = $values[int(($num * 3) / 4)];
+$firstq = $values[int($num / 4)];
+
+# Compute variance...
+foreach $value (@values) {
+    $dev += ($value - $mean) ** 2;
+}
+$var = $dev / $num;   # compute variance
+$sdev = sqrt($var);   # compute standard deviation
+
+printf("%d\tmin=%.3f, avg=%.3f, max=%.3f, sum=%.3f, var=%.3f, " .
+       "sdv=%.3f, mdn=%.3f, qt1=%.3f, qt3=%.3f\n",
+       $num, $min, $mean, $max, $sum, $var, 
+       $sdev, $median, $firstq, $thirdq);
+
+exit 0;

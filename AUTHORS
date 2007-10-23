@@ -27,4 +27,9 @@ to acknowledge the following authors:
     Author: Olivier Gay
     License: BSD License
 
+  * MPI: Arbitrary Precision Integer Arithmetic Library
+    http://www.cs.dartmouth.edu/~sting/mpi/
+    Author: Michael J. Fromberger
+    License: Public Domain
+
 
