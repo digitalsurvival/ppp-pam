@@ -789,6 +789,11 @@ int rijndaelSetupEncrypt(u32 *rk, const u8 *key, int keybits)
       rk += 8;
     }
   }
+
+  /* zero local variables */
+  i = 0;
+  temp = 0;
+
   return 0;
 }
 
@@ -837,6 +842,11 @@ int rijndaelSetupDecrypt(u32 *rk, const u8 *key, int keybits)
       Td2[Te4[(rk[3] >>  8) & 0xff] & 0xff] ^
       Td3[Te4[(rk[3]      ) & 0xff] & 0xff];
   }
+
+  /* zero local variables */
+  i = j = 0;
+  temp = 0;
+
   return nrounds;
 }
 
@@ -1020,6 +1030,9 @@ void rijndaelEncrypt(const u32 *rk, int nrounds, const u8 plaintext[16],
     (Te4[(t2      ) & 0xff] & 0x000000ff) ^
     rk[3];
   PUTU32(ciphertext + 12, s3);
+                                           
+  /* zero state memory */
+  s0 = s1 = s2 = s3 = t0 = t1 = t2 = t3 = 0;
 }
 
 void rijndaelDecrypt(const u32 *rk, int nrounds, const u8 ciphertext[16],
@@ -1203,4 +1216,7 @@ void rijndaelDecrypt(const u32 *rk, int nrounds, const u8 ciphertext[16],
     (Td4[(t0      ) & 0xff] & 0x000000ff) ^
     rk[3];
   PUTU32(plaintext + 12, s3);
+
+  /* zero state memory */
+  s0 = s1 = s2 = s3 = t0 = t1 = t2 = t3 = 0;
 }
