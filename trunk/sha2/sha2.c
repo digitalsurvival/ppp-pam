@@ -322,6 +322,13 @@ void sha256_transf(sha256_ctx *ctx, const unsigned char *message,
         ctx->h[6] += wv[6]; ctx->h[7] += wv[7];
 #endif /* !UNROLL_LOOPS */
     }
+
+	/* zero local variables */
+	memset(w, 0, sizeof(uint32)*64);
+	memset(wv, 0, sizeof(uint32)*8);
+	memset(&t1, 0, sizeof(uint32));
+	memset(&t2, 0, sizeof(uint32));
+    sub_block = NULL;
 }
 
 void sha256(const unsigned char *message, unsigned int len, unsigned char *digest)
@@ -331,6 +338,9 @@ void sha256(const unsigned char *message, unsigned int len, unsigned char *diges
     sha256_init(&ctx);
     sha256_update(&ctx, message, len);
     sha256_final(&ctx, digest);
+
+	/* zero context memory */
+	memset(&ctx, 0, sizeof(sha256_ctx));
 }
 
 void sha256_init(sha256_ctx *ctx)
@@ -383,6 +393,11 @@ void sha256_update(sha256_ctx *ctx, const unsigned char *message,
 
     ctx->len = rem_len;
     ctx->tot_len += (block_nb + 1) << 6;
+
+	/* zero local variables */
+	block_nb = 0;
+	new_len = rem_len = tmp_len = 0;
+	shifted_message = NULL;
 }
 
 void sha256_final(sha256_ctx *ctx, unsigned char *digest)
@@ -421,6 +436,11 @@ void sha256_final(sha256_ctx *ctx, unsigned char *digest)
    UNPACK32(ctx->h[6], &digest[24]);
    UNPACK32(ctx->h[7], &digest[28]);
 #endif /* !UNROLL_LOOPS */
+
+	/* zero local variables */
+	block_nb = 0;
+	pm_len = 0;
+	len_b = 0;
 }
 
 /* SHA-512 functions */
@@ -518,6 +538,13 @@ void sha512_transf(sha512_ctx *ctx, const unsigned char *message,
         ctx->h[6] += wv[6]; ctx->h[7] += wv[7];
 #endif /* !UNROLL_LOOPS */
     }
+
+	/* zero local variables */
+	memset(w, 0, sizeof(uint64)*80);
+	memset(wv, 0, sizeof(uint64)*8);
+	memset(&t1, 0, sizeof(uint64));
+	memset(&t2, 0, sizeof(uint64));
+    sub_block = NULL;
 }
 
 void sha512(const unsigned char *message, unsigned int len,
@@ -528,6 +555,9 @@ void sha512(const unsigned char *message, unsigned int len,
     sha512_init(&ctx);
     sha512_update(&ctx, message, len);
     sha512_final(&ctx, digest);
+
+	/* zero context memory */
+	memset(&ctx, 0, sizeof(sha512_ctx));
 }
 
 void sha512_init(sha512_ctx *ctx)
@@ -580,6 +610,11 @@ void sha512_update(sha512_ctx *ctx, const unsigned char *message,
 
     ctx->len = rem_len;
     ctx->tot_len += (block_nb + 1) << 7;
+
+	/* zero local variables */
+	block_nb = 0;
+	new_len = rem_len = tmp_len = 0;
+	shifted_message = NULL;
 }
 
 void sha512_final(sha512_ctx *ctx, unsigned char *digest)
@@ -618,6 +653,11 @@ void sha512_final(sha512_ctx *ctx, unsigned char *digest)
     UNPACK64(ctx->h[6], &digest[48]);
     UNPACK64(ctx->h[7], &digest[56]);
 #endif /* !UNROLL_LOOPS */
+
+	/* zero local variables */
+	block_nb = 0;
+	pm_len = 0;
+	len_b = 0;
 }
 
 /* SHA-384 functions */
@@ -630,6 +670,9 @@ void sha384(const unsigned char *message, unsigned int len,
     sha384_init(&ctx);
     sha384_update(&ctx, message, len);
     sha384_final(&ctx, digest);
+
+	/* zero context memory */
+	memset(&ctx, 0, sizeof(sha384_ctx));
 }
 
 void sha384_init(sha384_ctx *ctx)
@@ -682,6 +725,11 @@ void sha384_update(sha384_ctx *ctx, const unsigned char *message,
 
     ctx->len = rem_len;
     ctx->tot_len += (block_nb + 1) << 7;
+
+	/* zero local variables */
+	block_nb = 0;
+	new_len = rem_len = tmp_len = 0;
+	shifted_message = NULL;
 }
 
 void sha384_final(sha384_ctx *ctx, unsigned char *digest)
@@ -718,6 +766,11 @@ void sha384_final(sha384_ctx *ctx, unsigned char *digest)
     UNPACK64(ctx->h[4], &digest[32]);
     UNPACK64(ctx->h[5], &digest[40]);
 #endif /* !UNROLL_LOOPS */
+
+	/* zero local variables */
+	block_nb = 0;
+	pm_len = 0;
+	len_b = 0;
 }
 
 /* SHA-224 functions */
@@ -730,6 +783,9 @@ void sha224(const unsigned char *message, unsigned int len,
     sha224_init(&ctx);
     sha224_update(&ctx, message, len);
     sha224_final(&ctx, digest);
+
+	/* zero context memory */
+	memset(&ctx, 0, sizeof(sha224_ctx));
 }
 
 void sha224_init(sha224_ctx *ctx)
@@ -782,6 +838,11 @@ void sha224_update(sha224_ctx *ctx, const unsigned char *message,
 
     ctx->len = rem_len;
     ctx->tot_len += (block_nb + 1) << 6;
+
+	/* zero local variables */
+	block_nb = 0;
+	new_len = rem_len = tmp_len = 0;
+	shifted_message = NULL;
 }
 
 void sha224_final(sha224_ctx *ctx, unsigned char *digest)
@@ -819,6 +880,11 @@ void sha224_final(sha224_ctx *ctx, unsigned char *digest)
    UNPACK32(ctx->h[5], &digest[20]);
    UNPACK32(ctx->h[6], &digest[24]);
 #endif /* !UNROLL_LOOPS */
+
+	/* zero local variables */
+	block_nb = 0;
+	pm_len = 0;
+	len_b = 0;
 }
 
 #ifdef TEST_VECTORS
