@@ -176,7 +176,6 @@ int main( int argc, char * argv[] )
 		}
 	}
 	             
-	printf("%s\n", currPrompt());
 	/* cleanup , zero memory, etc */
 	mp_clear(&n);
 	clCleanup();
