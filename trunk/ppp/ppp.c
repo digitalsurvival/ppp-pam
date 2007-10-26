@@ -54,6 +54,8 @@ static mp_int d_maxPasscodes;
 static char d_passcode[5] = "";
 static char *d_prompt = NULL;
 static int d_prompt_len = 0;
+static char *d_buf = NULL;
+static int d_buflen = 0;
 
 static void _bytes_to_mp(unsigned char *bytes, mp_int *mp, int len) {
 	mp_read_unsigned_bin(mp, bytes, len);
@@ -234,6 +236,47 @@ void pppCleanup() {
 	
 	_zero_bytes((unsigned char *)d_prompt, d_prompt_len);
 	free(d_prompt);
+	_zero_bytes((unsigned char *)d_buf, d_buflen);
+	free(d_buf);
+}
+
+char *mpToDecimalString(mp_int *mp, char groupChar) {
+	int len = mp_radix_size(mp, 10);
+	int nCommas = 0;
+
+	_zero_bytes((unsigned char *)d_buf, d_buflen);
+	free(d_buf);
+	d_buflen = len + len/3 + 2;
+	d_buf = malloc(d_buflen);
+	mp_toradix(mp, (unsigned char *)d_buf, 10);
+
+	len = strlen(d_buf);
+           
+	if (groupChar) {
+		int nGroups = len / 3;
+		int firstGroupLen = len % 3;
+		nCommas = nGroups;
+		if (firstGroupLen == 0) {
+			nCommas--;
+		}
+	}
+	
+	               
+	if (nCommas > 0) {
+		int i, pos;
+		int offset = nCommas;
+		d_buf[len+offset] = '\x00';
+		for (i=0; i<len; i++) {
+			pos = len - 1 - i;
+			if (i>0 && i%3==0) {
+				d_buf[pos+offset] = ',';
+				offset--;
+			}
+			d_buf[pos+offset] = d_buf[pos];
+		}
+	}
+
+	return d_buf;	
 }
 
 char *currPrompt() {

@@ -35,6 +35,7 @@
     
 void pppInit();
 void pppCleanup();
+char * mpToDecimalString(mp_int *mp, char groupChar);
 char *currPrompt();
 mp_int *seqKey();
 void setSeqKey(mp_int *mp);
