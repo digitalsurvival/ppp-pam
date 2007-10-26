@@ -43,18 +43,26 @@ static char *private_key_file_name = "/private_key";
 static char *private_count_file_name = "/private_cnt";
 static char *private_generated_file_name = "/private_gen";
 static char *private_key_dir = "/.pppauth";
+static char userhome[128] = "";
 
 static char *_home_dir() {
 	static struct passwd *pwdata = NULL;
 	
-	if (pwdata == NULL) {
-		uid_t uid = geteuid();
-		pwdata = getpwuid(uid);
+	if (strlen(userhome) == 0) {
+		/* get home dir for logged-in user */
+		if (pwdata == NULL) {
+			uid_t uid = geteuid();
+			pwdata = getpwuid(uid);
+		}
+	
+		if (pwdata) {
+			return pwdata->pw_dir;
+		}
+	} else {
+		return userhome;
 	}
 	
-	if (pwdata) {
-		return pwdata->pw_dir;
-	}
+	
 	return NULL;
 }                                     
 
@@ -99,10 +107,17 @@ static char *_gen_file_name() {
 }
 
 static void _enforce_permissions() {
-	chmod(_key_file_dir(), S_IRWXU);
-	chmod(_key_file_name(), S_IRWXU);
-	chmod(_cnt_file_name(), S_IRWXU);
-	chmod(_gen_file_name(), S_IRWXU);
+	chown(_key_file_dir(), -1, 0);
+	chmod(_key_file_dir(), S_IRWXU | S_IRWXG);
+
+	chown(_key_file_name(), -1, 0);
+	chmod(_key_file_name(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+
+	chown(_cnt_file_name(), -1, 0);
+	chmod(_cnt_file_name(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+
+	chown(_gen_file_name(), -1, 0);
+	chmod(_gen_file_name(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
 }
 
 static int _file_exists(char *fname) {
@@ -171,6 +186,11 @@ static int confirm(char *prompt) {
 	} while (strcasecmp(p, "yes") != 0);
 
 	return 1;
+}
+
+void setUser(char *user) {
+	strncpy(userhome, "/Users/", 7);
+	strncat(userhome, user, 120);
 }
 
 int keyfileExists() {

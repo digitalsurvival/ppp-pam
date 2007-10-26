@@ -36,11 +36,26 @@ PPPAUTH_OBJS += build/pppauth.a
 PPPAUTH_OBJS += ppp/print.o
 PPPAUTH_OBJS += mpi/libmpi.a
 
+PAM_OBJS += ppp/pam_ppp.o
+PAM_OBJS += ppp/keyfiles.o
+PAM_OBJS += ppp/ppp.o
+PAM_OBJS += build/pppauth.a
+PAM_OBJS += mpi/libmpi.a
 
-all: build/pppauth
+all: build/pppauth build/pam_ppp.so
+
+install: build/pppauth build/pam_ppp.so
+	cp build/pppauth /usr/bin/pppauth
+	cp build/pam_ppp.so /usr/lib/pam/pam_ppp.so
 
 build/pppauth: $(PPPAUTH_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@
+
+build/pam_ppp.so: $(PAM_OBJS)
+	$(CC) -bundle -Ddarwin -no-cpp-precomp -lc -lpam $^ -o $@ 
+	
+ppp/pam_ppp.o: ppp/pam_ppp.c
+	$(CC) $(CFLAGS) -Ddarwin -no-cpp-precomp -DPAM_DYNAMIC -c  $^ -o $@
 
 build/pppauth.a: rijndael/rijndael.o sha2/sha2.o 
 	ar -cr $@ $^
