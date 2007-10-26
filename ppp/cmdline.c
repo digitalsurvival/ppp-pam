@@ -106,10 +106,11 @@ void usage() {
 		"  --next <num>       Generate next <num> consecutive passcards from current\n"
 		"                     active passcode for printing.\n"
 		"  -c, --card <num>   Specify number of passcard to --skip to or print.\n"
-		"  -p, --passcode <NNNNCRR>\n"
+		"  -p, --passcode <RRC[NNNN]>\n"
 		"                     Specify a single passcode identifier to --skip to or print.\n"
 		"                     Where: NNNN is the decimal integer passcard number, C is\n"
 		"                     the column (A through G), and RR is the row (1 through 10).\n"
+		"                     Square brackets around NNNN and comma separators are optional."
 		"  --passphrase <phrase>\n"
 		"                     Use the specified <phrase> to create a temporary key for\n"
 		"                     testing purposes only.  This temporary key is not saved\n"
@@ -119,9 +120,9 @@ void usage() {
 	);
 }
 
-int isDecimal(char *str) {
+int isDecimal(char *str, int len) {
 	int i;
-	for (i=0; i<strlen(str); i++) {
+	for (i=0; i<len; i++) {
 		if ( ! isdigit(str[i]) ) {
 			return 0;
 		}
@@ -130,7 +131,7 @@ int isDecimal(char *str) {
 }
 
 int validNumCards(char *str, int length) {
-	if ( ! isDecimal(str) ) {
+	if ( ! isDecimal(str, length) ) {
 		return 0;
 	}
 	numCards = atoi(str);
@@ -145,7 +146,7 @@ int validCardNum(char *str, int length) {
 	strncpy(data, str, length);
 	data[length] = '\x00';
 	
-	if ( ! isDecimal(data) ) {
+	if ( ! isDecimal(data, strlen(data)) ) {
 		return 0;
 	}
 	mp_read_radix(&cardNum, (unsigned char *)data, 10);
@@ -166,7 +167,7 @@ int validColLetter(char *str, int length) {
 }
 
 int validRowNum(char *str, int length) {
-	if ( ! isDecimal(str) ) {
+	if ( ! isDecimal(str, length) ) {
 		return 0;
 	}
 	rowNum = atoi(str);
@@ -185,7 +186,7 @@ int validPasscode(char *str, int length) {
 	if (c >= strlen(str)) {
 		return 0;
 	}
-	if (validCardNum(str, c) == 0) {
+	if (validRowNum(str, c) == 0) {
 		return 0;
 	}
 	int d = strspn(str+c, "abcdefgABCDEFG");
@@ -199,7 +200,7 @@ int validPasscode(char *str, int length) {
 		return 0;
 	}
 	
-	if (validRowNum(passcode+c+d, strlen(passcode+c+d)) == 0) {
+	if (validCardNum(passcode+c+d, strlen(passcode+c+d)) == 0) {
 		return 0;
 	}
 	return 1;
@@ -207,7 +208,7 @@ int validPasscode(char *str, int length) {
 
 void processCommandLine( int argc, char * argv[] )
 {
-	int c;
+	int c, i, j;
 	
 	static struct option long_options[] = { 
 		{"key",			no_argument,		0, 'k'},
@@ -267,8 +268,20 @@ void processCommandLine( int argc, char * argv[] )
 				break;
 			case 'p':
 				fPasscode = 1;
-				strncpy(passcode, optarg, 1023);
-				passcode[1023] = '\x00';
+				i = j = 0;
+				while( optarg[i] != '\x00' ) {
+					switch( optarg[i] ) {
+						case ',' : 
+						case '[' :
+						case ']' :
+							i++;
+							break;
+						default:
+							passcode[j++] = optarg[i++];
+							break;
+					}
+					passcode[j] = '\x00';
+				}
 				break;
 			case 'v':
 				fVerbose = 1;
