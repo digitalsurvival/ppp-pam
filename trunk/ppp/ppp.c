@@ -310,8 +310,8 @@ char *currPrompt() {
 	mp_clear(&row);
 	
 	free(d_prompt);
-	d_prompt = malloc(strlen("Passcode :") + strlen(cardstr) + 6);
-	sprintf(d_prompt, "Passcode %s-%c-%d: ", cardstr, c.val+'A', ++r.val);
+	d_prompt = malloc(strlen("Passcode []:") + strlen(cardstr) + 6);
+	sprintf(d_prompt, "Passcode %d%c [%s]: ",++r.val, c.val+'A', cardstr);
 	
 	mp_clear(&row);
 	_zero_bytes(c.bytes, 4);
