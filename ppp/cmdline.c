@@ -274,6 +274,7 @@ void processCommandLine( int argc, char * argv[] )
 						case ',' : 
 						case '[' :
 						case ']' :
+						case ' ' :
 							i++;
 							break;
 						default:
