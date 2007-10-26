@@ -33,51 +33,10 @@
 #include "print.h"
 #include "cmdline.h"
 
-static char *buf = NULL;
- 
 void printInit() {
-	
 }   
 
 void printCleanup() {
-	free(buf);
-}
-
-char *mpToDecimalString(mp_int *mp, char groupChar) {
-	int len = mp_radix_size(mp, 10);
-	int nCommas = 0;
-
-	free(buf);
-	buf = malloc(len + len/3 + 2);
-	mp_toradix(mp, (unsigned char *)buf, 10);
-
-	len = strlen(buf);
-           
-	if (groupChar) {
-		int nGroups = len / 3;
-		int firstGroupLen = len % 3;
-		nCommas = nGroups;
-		if (firstGroupLen == 0) {
-			nCommas--;
-		}
-	}
-	
-	               
-	if (nCommas > 0) {
-		int i, pos;
-		int offset = nCommas;
-		buf[len+offset] = '\x00';
-		for (i=0; i<len; i++) {
-			pos = len - 1 - i;
-			if (i>0 && i%3==0) {
-				buf[pos+offset] = ',';
-				offset--;
-			}
-			buf[pos+offset] = buf[pos];
-		}
-	}
-
-	return buf;	
 }
 
 void printCard(mp_int *nCard) {

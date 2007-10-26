@@ -230,10 +230,6 @@ int writeState() {
 	if ( ! _dir_exists(_key_file_dir()) )
 		return 0;
 		
-	if (fVerbose) {
-		printf("Saving state.\n");
-	}
-
 	fp[0] = fopen(_cnt_file_name(), "w");
 	fp[1] = fopen(_gen_file_name(), "w");
 	if (fp[0] && fp[1]) {

@@ -34,7 +34,6 @@
           
 void printInit();
 void printCleanup();
-char * mpToDecimalString(mp_int *mp, char groupChar);
 void printCard(mp_int *nCard);
 
 #endif
