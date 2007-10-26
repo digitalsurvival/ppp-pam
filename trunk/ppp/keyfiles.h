@@ -31,6 +31,7 @@
 
 #include "ppp.h"
 
+void setUser(char *user);
 int keyfileExists();
 int writeKeyFile();
 int writeState();

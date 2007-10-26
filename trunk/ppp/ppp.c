@@ -38,7 +38,6 @@
 #include <pwd.h>
             
 #include "ppp.h"
-#include "print.h";
 
 #define KEY_BITS (int)256
 
@@ -311,14 +310,26 @@ char *currPrompt() {
 	mp_clear(&row);
 	
 	free(d_prompt);
-	d_prompt = malloc(strlen("Passcode ():") + strlen(cardstr) + 6);
-	sprintf(d_prompt, "Passcode (%s-%c-%d): ", cardstr, c.val+'A', ++r.val);
+	d_prompt = malloc(strlen("Passcode :") + strlen(cardstr) + 6);
+	sprintf(d_prompt, "Passcode %s-%c-%d: ", cardstr, c.val+'A', ++r.val);
 	
 	mp_clear(&row);
 	_zero_bytes(c.bytes, 4);
 	_zero_bytes(r.bytes, 4);
 	
 	return d_prompt;
+}
+
+int pppAuthenticate(char *attempt) {
+	int rv = 0;
+	if (strcmp(getPasscode(currPasscodeNum()), attempt) == 0)
+		rv = 1;
+		
+	incrCurrPasscodeNum();
+	writeState();
+	_zero_bytes((unsigned char *)d_passcode, 5);
+	
+	return rv;
 }
 
 mp_int *seqKey() {

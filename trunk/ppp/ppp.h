@@ -32,11 +32,15 @@
 #include "sha2.h"
 #include "rijndael.h"
 #include "mpi.h"
+
+#include "print.h";
+#include "keyfiles.h";
     
 void pppInit();
 void pppCleanup();
 char * mpToDecimalString(mp_int *mp, char groupChar);
 char *currPrompt();
+int pppAuthenticate(char *attempt);
 mp_int *seqKey();
 void setSeqKey(mp_int *mp);
 mp_int *currPasscodeNum();
