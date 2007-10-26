@@ -26,77 +26,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
+#ifndef _HTTP_H_
+#define _HTTP_H_
 
-#include "print.h"
+#include <time.h>
+
+#include "ppp.h"
 #include "cmdline.h"
 
-void printInit() {
-}   
+void htmlStart(FILE *f);
+void htmlEnd(FILE *f);
+void htmlCard(FILE *f, mp_int *nCard);
 
-void printCleanup() {
-}
+void httpSendHeaders(FILE *f, int status, char *title, char *extra, char *mime, int length, time_t date);
+void httpSendError(FILE *f, int status, char *title, char *extra, char *text);
+int httpProcess(FILE *f);
+void httpServe();
 
-void printCard(mp_int *nCard) {
-	char groupChar = ',';
-	mp_int start;
-	mp_init(&start);
-	calculatePasscodeNumberFromCardColRow(nCard, 0, 0, &start);
-
-	char buf[70*4];
-	getPasscodeBlock(&start, 70, buf);
-	mp_clear(&start);
-	
-	char hname[39];
-	strncpy(hname, hostname(), 38);
-	
-	mp_int n;
-	mp_init(&n);
-	mp_add_d(nCard, 1, &n);
-	char *cardnumber = mpToDecimalString(&n, groupChar);
-	char *cn = cardnumber;
-	mp_clear(&n);
-	
-	if (strlen(hname) + strlen(cardnumber) + 3 > 38) {
-		if (strlen(hname) > 27) {
-			hname[27] = '\x00';
-		}
-		int ellipses = strlen(cardnumber) - (38 - strlen(hname) - 3);
-		if (ellipses > 0) {
-			cn = cardnumber+ellipses;
-			cn[0] = cn[1] = cn[2] = '.';
-			/* When truncating the card number, make sure we don't
-			 * begin with a comma after the ellipses
-			 */
-			if (cn[3] == groupChar) {
-				cn[3] = '.';
-				cn++;
-			}
-		}
-	}
-	
-	printf("%s", hname);
-	int j;
-	for (j=0; j<38-strlen(hname)-strlen(cn)-2; j++)
-		printf(" ");
-	printf("[%s]\n", cn);
-	printf("      A    B    C    D    E    F    G\n");
-	         
-	j = 0;
-	int r, c;
-	for (r=1; r<=10; r++) {
-		printf("%2d: ", r);
-		for (c=0; c<7; c++) {
-			if (c) printf(" ");
-			printf("%c%c%c%c", buf[j*4+0], buf[j*4+1], buf[j*4+2], buf[j*4+3]);  
-			j++;
-		}
-		printf("\n");
-	}
-	printf("\n");
-
-	/* zero passcodes from memory */
-	memset(buf, 0, 70*4);
-}
+#endif

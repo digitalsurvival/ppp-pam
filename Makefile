@@ -34,6 +34,7 @@ PPPAUTH_OBJS += ppp/keyfiles.o
 PPPAUTH_OBJS += ppp/ppp.o
 PPPAUTH_OBJS += build/pppauth.a
 PPPAUTH_OBJS += ppp/print.o
+PPPAUTH_OBJS += ppp/http.o
 PPPAUTH_OBJS += mpi/libmpi.a
 
 PAM_OBJS += ppp/pam_ppp.o

@@ -35,6 +35,7 @@
 #include "sha2.h"
 #include "ppp.h"
 #include "print.h"
+#include "http.h"
 
 int main( int argc, char * argv[] )
 {
@@ -175,6 +176,11 @@ int main( int argc, char * argv[] )
 			}
 		}
 	}
+	
+	if (fHtml) {
+		httpServe();
+	}
+	
 	             
 	/* cleanup , zero memory, etc */
 	mp_clear(&n);

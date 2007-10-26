@@ -100,7 +100,7 @@ void usage() {
 		"Options:\n"
 		"  -k, --key          Generate a new sequence key and save in ~/.pppauth.\n"
 		"  -s, --skip         Skip to --passcode or to --card specified.\n"
-		// "  -h, --html         Generate html passcards for printing.\n"
+		"  -h, --html         Generate html passcards for printing.\n"
 		"  -t, --text         Generate text passcards for printing.\n"
 		"  -m, --name <name>  Specify hostname to use for printing passcards.\n"
 		"  --next <num>       Generate next <num> consecutive passcards from current\n"
@@ -213,7 +213,7 @@ void processCommandLine( int argc, char * argv[] )
 	static struct option long_options[] = { 
 		{"key",			no_argument,		0, 'k'},
 		{"skip",   		no_argument,		0, 's'},
-		// {"html",		no_argument,		0, 'h'},
+		{"html",		no_argument,		0, 'h'},
 		{"text",		no_argument,		0, 't'},
 		{"next",		no_argument,		&fNext, 1},
 		{"name",		required_argument,	0, 'm'},
@@ -227,7 +227,7 @@ void processCommandLine( int argc, char * argv[] )
     while (1) {
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
-		c = getopt_long_only(argc, argv, "kstm:c:p:v", long_options, &option_index);
+		c = getopt_long_only(argc, argv, "kshtm:c:p:v", long_options, &option_index);
   
 		/* Detect the end of the options. */
 		if (c == -1)
@@ -335,8 +335,12 @@ void processCommandLine( int argc, char * argv[] )
 		errorExitWithUsage("must specify a passcode to `--skip' to with -p or -n,-r,-c.");
 	} 
 	
-	if ( (fHtml || fText) && !(fNext || fCard || fPasscode) ) {
+	if ( fText && !(fNext || fCard || fPasscode) ) {
 		errorExitWithUsage("must specify which card(s) to generate with `--next' or `--card' or `--passcode'");
+	}
+
+	if ( fHtml && !(fNext || fCard) ) {
+		errorExitWithUsage("must specify which card(s) to generate with `--next' or `--card'");
 	}
 	
 	if ( ! (keyfileExists() || fKey || fPassphrase) ) {
@@ -356,6 +360,11 @@ void processCommandLine( int argc, char * argv[] )
 	if (fNext && fCard) {
 		errorExitWithUsage("Cannot use `--next' with `--card'");
 	}
+	
+	if (fHtml && fPasscode) {
+		errorExit("cannot specify `--passcode' with `--html'");
+	}
+	
 }
 
 char *getPassphrase() {
