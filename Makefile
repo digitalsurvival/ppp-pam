@@ -43,11 +43,33 @@ PAM_OBJS += ppp/ppp.o
 PAM_OBJS += build/pppauth.a
 PAM_OBJS += mpi/libmpi.a
 
+TESTCMD = build/pppauth --passphrase testvectors --text --name testvectors --card
+TESTFILTER = grep -v testvectors | grep -v ww.GRC.com
+
 all: build/pppauth build/pam_ppp.so
 
 install: build/pppauth build/pam_ppp.so
 	cp build/pppauth /usr/bin/pppauth
 	cp build/pam_ppp.so /usr/lib/pam/pam_ppp.so
+
+test: build/pppauth
+	make -C mpi test
+	@cat ppp/testvectors.txt | $(TESTFILTER) > build/testvectors.txt
+	@$(TESTCMD) 1 | $(TESTFILTER) > build/testoutput.txt
+	@$(TESTCMD) 2 | $(TESTFILTER) >> build/testoutput.txt
+	@$(TESTCMD) 3 | $(TESTFILTER) >> build/testoutput.txt
+	@$(TESTCMD) 1234567890 | $(TESTFILTER) >> build/testoutput.txt
+	@$(TESTCMD) 1234567891 | $(TESTFILTER) >> build/testoutput.txt
+	@$(TESTCMD) 1234567892 | $(TESTFILTER) >> build/testoutput.txt
+	@$(TESTCMD) 65536 | $(TESTFILTER) >> build/testoutput.txt
+	@$(TESTCMD) 65537 | $(TESTFILTER) >> build/testoutput.txt
+	@$(TESTCMD) 65538 | $(TESTFILTER) >> build/testoutput.txt
+	@$(TESTCMD) 4294967295 | $(TESTFILTER) >> build/testoutput.txt
+	@$(TESTCMD) 4294967296 | $(TESTFILTER) >> build/testoutput.txt
+	@$(TESTCMD) 4294967297 | $(TESTFILTER) >> build/testoutput.txt
+	@echo Running test vectors for pppauth...
+	cmp build/testvectors.txt build/testoutput.txt
+	@echo Passed all test vectors.
 
 build/pppauth: $(PPPAUTH_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@
