@@ -56,6 +56,11 @@ static int d_prompt_len = 0;
 static char *d_buf = NULL;
 static int d_buflen = 0;
 
+typedef union {
+	unsigned char bytes[4];
+	unsigned int val;
+} utype;
+
 static void _bytes_to_mp(unsigned char *bytes, mp_int *mp, int len) {
 	mp_read_unsigned_bin(mp, bytes, len);
 }
@@ -81,6 +86,27 @@ static void _reverse_bytes(unsigned char *buf, int len) {
 		buf[i] = buf[len-i-1];
 		buf[len-i-1] = temp;
 	}
+}
+
+static void _mp_to_uint(mp_int *mp, unsigned int *i) {
+	utype tell, v;
+	
+	tell.val = 0x4d494d49;
+	v.val = 0;
+
+	mp_to_unsigned_bin(mp, v.bytes);
+	
+	/* We can't just use htonl() here because it swaps bytes
+	 * on intel (little-endian) platforms and it's motorolla
+	 * (big-endian) platforms where we want to swap bytes.
+	 */
+	if (tell.bytes[0] == 'M') {
+		_reverse_bytes(v.bytes, 4);
+	}
+	
+	*i = v.val;
+	
+	v.val = 0;
 }
 
 static void _zero_bytes(unsigned char *buf, int len) {
@@ -281,16 +307,7 @@ char *mpToDecimalString(mp_int *mp, char groupChar) {
 char *currPrompt() {
 	mp_int mp;
 	mp_int row;
-
-	/* This works on Intel-based Mac OS X, but
-	 * it may require tweaking on other platforms
-	 * in order to get the endianness correct.
-	 */
-	union {
-		unsigned char bytes[4];
-		unsigned int val;
-	} c,r;
-	c.val = r.val = 0;
+	unsigned int c, r;
 
 	mp_init(&mp);
 	mp_init(&row);
@@ -304,18 +321,17 @@ char *currPrompt() {
 	mp_sub(currPasscodeNum(), &row, &row);
 	mp_set_int(&mp, 7);
 	mp_div(&row, &mp, &row, &mp);
-	mp_to_unsigned_bin(&row, r.bytes);
-	mp_to_unsigned_bin(&mp, c.bytes);
+	_mp_to_uint(&row, &r);
+	_mp_to_uint(&mp, &c);
 	mp_clear(&mp);
 	mp_clear(&row);
 	
 	free(d_prompt);
 	d_prompt = malloc(strlen("Passcode []:") + strlen(cardstr) + 6);
-	sprintf(d_prompt, "Passcode %d%c [%s]: ",++r.val, c.val+'A', cardstr);
+	sprintf(d_prompt, "Passcode %d%c [%s]: ",++r, c+'A', cardstr);
 	
 	mp_clear(&row);
-	_zero_bytes(c.bytes, 4);
-	_zero_bytes(r.bytes, 4);
+	c = r = 0;
 	
 	return d_prompt;
 }
@@ -423,6 +439,7 @@ void generateRandomSequenceKey() {
 }
 
 char *getPasscode(mp_int *n) {
+	unsigned int ofs = 0;
 	mp_int cipherNum, offset;
 	mp_init(&cipherNum);
 	mp_init(&offset);
@@ -435,22 +452,13 @@ char *getPasscode(mp_int *n) {
 	mp_init(&cipherBlock);
 	_compute_passcode_block(&cipherNum, &cipherBlock);
 	mp_clear(&cipherNum);
-	  
-	/* This works on Intel-based Mac OS X, but
-	 * it may require tweaking on other platforms
-	 * in order to get the endianness correct.
-	 */
-	union {
-		unsigned char bytes[4];
-		unsigned int val;
-	} ofs;
-	ofs.val = 0;
-	mp_to_unsigned_bin(&offset, ofs.bytes);
+
+	_mp_to_uint(&offset, &ofs);
 	mp_clear(&offset);
 
-	char *passcode = _extract_passcode_from_block(&cipherBlock, ofs.val);
+	char *passcode = _extract_passcode_from_block(&cipherBlock, ofs);
 	mp_clear(&cipherBlock);
-	ofs.val = 0;
+	ofs = 0;
 	
 	return passcode;
 }
@@ -464,18 +472,9 @@ void getPasscodeBlock(mp_int *startingPasscodeNum, int qty, char *output) {
 	mp_int cipherNum;
 	mp_init(&cipherNum);
 
+	unsigned int ofs = 0;
 	mp_int offset;
 	mp_init(&offset);
-
-	/* This works on Intel-based Mac OS X, but
-	 * it may require tweaking on other platforms
-	 * in order to get the endianness correct.
-	 */
-	union {
-		unsigned char bytes[4];
-		unsigned int val;
-	} ofs;
-	ofs.val = 0;
 
 	/* force the initial computation by making lastCipherNum
 	 * differ from cipherNum
@@ -495,9 +494,11 @@ void getPasscodeBlock(mp_int *startingPasscodeNum, int qty, char *output) {
 			mp_copy(&cipherNum, &lastCipherNum);
 		}
 		
-		mp_to_unsigned_bin(&offset, ofs.bytes);
-		strncpy(output+4*i, _extract_passcode_from_block(&cipherBlock, ofs.val), 4);
+		_mp_to_uint(&offset, &ofs);
+		strncpy(output+4*i, _extract_passcode_from_block(&cipherBlock, ofs), 4);
 		
 		mp_add_d(&passcodeNum, 1, &passcodeNum);
 	}
+	
+	ofs = 0;
 }
