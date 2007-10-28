@@ -1,0 +1,61 @@
+#summary How to build and install PPP-PAM from the source code.
+#labels Featured,Phase-Deploy
+
+_*Please note that these instructions differ from the initial instructions published in the GRC newsgroups.  The most recent instructions will appear here, so you should always check for the latest version of this page before attempting to build the code.*_
+
+= Mac OSX =
+
+=== Leopard ===
+
+It's not known yet whether this works on Leopard.  If you feel daring, follow the instructions below for Tiger and report back with your results.
+
+=== Tiger ===
+
+~~At the moment, the code has only reported to build properly on Intel-based macs.  Support for powerpc macs is planned, however access to a powerpc machine for testing is holding up development.~~
+
+_It's been reported that this now works for powerpc macs as well as Intel._
+
+ # Download version 0.1 of the source code from [http://ppp-pam.googlecode.com/files/ppp-pam-0.1.tar.gz here] and save to your disk.
+ # Open a terminal window and extract the source files.
+{{{
+tar -xvzf ppp-pam-0.1.tar.gz
+cd ppp-pam
+}}}
+ # Build the code
+{{{
+make
+}}}
+ # Test to confirm it built correctly
+{{{
+make test
+}}}
+ # Install the {{{pppauth}}} utility and PAM module in the appropriate folders
+{{{
+make install
+}}}
+ # Enable PPP authentication for ssh connections.  (You will need to enter your administrator password to run the following commands).
+{{{
+sudo chmod +w /etc/pam.d/sshd
+sudo open -a TextEdit /etc/pam.d/sshd
+}}}
+  Enter the following line just above the line with {{{pam_securityserver.so}}}
+  {{{
+  auth       required       pam_ppp.so
+  }}}
+ # Save the file and close TextEdit.
+ # Create a PPP sequence key for your user account.
+{{{
+pppauth --key
+}}}
+ # Print some passcards.
+{{{
+pppauth --html --next 3
+}}}
+ # Try logging in to test it.
+{{{
+ssh localhost
+}}}
+
+= Linux =
+
+The code does not yet work under Linux, however, some progress has been made in getting it to compile.  Details can be found in the comments attached to [http://code.google.com/p/ppp-pam/issues/detail?id=4 issue number 4].  This page will be updated once it is confirmed to be working.
