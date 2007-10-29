@@ -62,9 +62,9 @@ The code is now building under linux thanks to the help of Michael.Strecke, gavi
 
 If you want to experiment with it:
 
- # Download revision 22 of the source code.
+ # Download revision 24 of the source code.
 {{{
-svn checkout -r 22 http://ppp-pam.googlecode.com/svn/trunk ppp-pam
+svn checkout -r 24 http://ppp-pam.googlecode.com/svn/trunk ppp-pam
 cd ppp-pam
 }}}
  # Build the code.
