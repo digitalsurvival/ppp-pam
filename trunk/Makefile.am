@@ -11,7 +11,7 @@ logtab.h: ./$(srcdir)/mpi/make-logtab
 	$(PERL) ./$(srcdir)/mpi/make-logtab > $@
 
 mpi-types.h: ./$(srcdir)/mpi/types.pl
-	$(PERL) ./$(srcdir)/mpi/types.pl 2 $(CC) "$(libmpi_a_CFLAGS)" > $@
+	$(PERL) ./$(srcdir)/mpi/types.pl 2 $(CC) "$(MYCFLAGS)" > $@
 
 PPPSRC = ./$(srcdir)/ppp/keyfiles.h ./$(srcdir)/ppp/keyfiles.c \
          ./$(srcdir)/ppp/ppp.h ./$(srcdir)/ppp/ppp.c \
