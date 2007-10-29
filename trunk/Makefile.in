@@ -757,7 +757,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-info-am
 
 
 dummy.c: logtab.h mpi-types.h
-	touch dummy.c
+	echo "#include <stdio.h>" > dummy.c
 
 logtab.h: ./$(srcdir)/mpi/make-logtab
 	$(PERL) ./$(srcdir)/mpi/make-logtab > $@
