@@ -33,8 +33,8 @@
 #include "rijndael.h"
 #include "mpi.h"
 
-#include "print.h";
-#include "keyfiles.h";
+#include "print.h"
+#include "keyfiles.h"
     
 void pppInit();
 void pppCleanup();
