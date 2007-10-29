@@ -374,4 +374,3 @@ char *getPassphrase() {
 void clCleanup() {
 	mp_clear(&cardNum);
 }
-

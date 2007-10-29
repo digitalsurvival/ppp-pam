@@ -48,18 +48,20 @@ $target_size = shift(@ARGV);
 );
 
 # Read the Makefile to find out which C compiler to use
-open(MFP, "<Makefile.base") or die "$prog: Makefile.base: $!\n";
-while(<MFP>) {
-    chomp;
-    if(/^CC=(.*)$/) {
-	$cc = $1;
-	last if $cflags;
-    } elsif(/^CFLAGS=(.*)$/) {
-	$cflags = $1;
-	last if $cc;
-    }
-}
-close(MFP);
+# open(MFP, "<Makefile.base") or die "$prog: Makefile.base: $!\n";
+# while(<MFP>) {
+#     chomp;
+#     if(/^CC=(.*)$/) {
+# 	$cc = $1;
+# 	last if $cflags;
+#     } elsif(/^CFLAGS=(.*)$/) {
+# 	$cflags = $1;
+# 	last if $cc;
+#     }
+# }
+# close(MFP);
+$cc = $ARGV[0];
+$cflags = $ARGV[1];
 
 # If we couldn't find that, use 'cc' by default
 $cc = "cc" unless $cc;
