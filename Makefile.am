@@ -4,7 +4,7 @@ libmpi_a_SOURCES = dummy.c ./$(srcdir)/mpi/mpi.c ./$(srcdir)/mpi/mpprime.c
 libmpi_a_CFLAGS = -ansi -pedantic -Wall -O3 -funsigned-char
 
 dummy.c: logtab.h mpi-types.h
-	touch dummy.c
+	echo "#include <stdio.h>" > dummy.c
 
 logtab.h: ./$(srcdir)/mpi/make-logtab
 	$(PERL) ./$(srcdir)/mpi/make-logtab > $@
