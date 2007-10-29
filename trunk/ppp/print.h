@@ -34,6 +34,7 @@
           
 void printInit();
 void printCleanup();
+void printKey (mp_int *key);
 void printCard(mp_int *nCard);
 
 #endif

@@ -77,7 +77,7 @@ int main( int argc, char * argv[] )
 	
 	if (fVerbose) {
 		printf("%s sequence key: ", (fPassphrase ? "Temporary" : "User"));
-		mp_print(seqKey(), stdout);
+		printKey(seqKey());
 		printf("\n");
 		mp_int mp;
 		mp_init(&mp);
