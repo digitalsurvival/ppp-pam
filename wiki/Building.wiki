@@ -29,11 +29,11 @@ make
 {{{
 make test
 }}}
- # Install the {{{pppauth}}} utility and PAM module in the appropriate folders
+ # Install the {{{pppauth}}} utility and PAM module in the appropriate folders. (You will need to enter your administrator password to run the following command).
 {{{
-make install
+sudo make install
 }}}
- # Enable PPP authentication for ssh connections.  (You will need to enter your administrator password to run the following commands).
+ # Enable PPP authentication for ssh connections.
 {{{
 sudo chmod +w /etc/pam.d/sshd
 sudo open -a TextEdit /etc/pam.d/sshd
@@ -58,4 +58,34 @@ ssh localhost
 
 = Linux =
 
-The code does not yet work under Linux, however, some progress has been made in getting it to compile.  Details can be found in the comments attached to [http://code.google.com/p/ppp-pam/issues/detail?id=4 issue number 4].  This page will be updated once it is confirmed to be working.
+The code is now building under linux thanks to the help of Michael.Strecke, gavin.kinsey, and justarandomgeek!  I've taken their [http://code.google.com/p/ppp-pam/issues/detail?id=4 patches] and incorporated them in source code.  I am now able to get pppauth to work and generate keys and passcards, etc.  Unfortunately, when I try to log in, pam_ppp.so appears to not be working, as I always get the permission denied message.
+
+If you want to experiment with it:
+
+ # Download revision 22 of the source code.
+{{{
+svn checkout -r 22 http://ppp-pam.googlecode.com/svn/trunk ppp-pam
+cd ppp-pam
+}}}
+ # Build the code.
+{{{
+cd build
+../configure
+make
+}}}
+ # Test to confirm it built correctly
+{{{
+make test
+}}}
+ # Install the {{{pppauth}}} utility and PAM module in the appropriate folders. (You will need to enter your administrator password to run the following command).
+{{{
+sudo make install
+}}}
+ # Create a PPP sequence key for your user account.
+{{{
+pppauth --key
+}}}
+ # Generate a passcard.
+{{{
+pppauth --text --card 3
+}}}
