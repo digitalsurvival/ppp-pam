@@ -44,6 +44,7 @@
 
 #ifdef HAVE_SECURITY_PAM_MODULES_H
 	#include <security/pam_modules.h>
+	#include <security/_pam_macros.h>
 #else	
 	#include <pam/pam_modules.h>
 	#include <pam/pam_mod_misc.h>

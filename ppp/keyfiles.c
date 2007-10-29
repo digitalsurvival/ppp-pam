@@ -189,7 +189,12 @@ static int confirm(char *prompt) {
 }
 
 void setUser(char *user) {
+#ifdef OS_IS_MACOSX	
 	strncpy(userhome, "/Users/", 7);
+#endif
+#ifdef OS_IS_LINUX	
+	strncpy(userhome, "/home/", 6);
+#endif
 	strncat(userhome, user, 120);
 }
 

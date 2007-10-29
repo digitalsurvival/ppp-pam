@@ -14,6 +14,19 @@ AC_SUBST(UUID_LIBS)
 
 AC_CHECK_HEADERS([security/pam_modules.h])
 
+OSTYPE="MACOSX"
+osx = true
+case ${host} in
+  *-darwin*)    
+				AC_DEFINE(OS_IS_MACOSX)
+				OSTYPE="MACOSX" ;;
+  *-linux*)     
+				AC_DEFINE(OS_IS_LINUX)
+				OSTYPE="LINUX" ;;
+esac
+AC_SUBST(OSTYPE)
+AM_CONDITIONAL(OSX, [test "$OSTYPE" != "LINUX"])
+
 AC_PREFIX_DEFAULT(/usr)
 AC_PREFIX_PROGRAM(ssh-keygen) 
 
