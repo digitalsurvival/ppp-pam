@@ -53,7 +53,6 @@ void printKey (mp_int *key) {
 	for (i=0; i<48; i++) {
 		printf("%2.2x", buf[48-i-1]);
 	}
-	printf("\n");
 }
 
 void printCard(mp_int *nCard) {
