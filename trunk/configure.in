@@ -15,7 +15,6 @@ AC_SUBST(UUID_LIBS)
 AC_CHECK_HEADERS([security/pam_modules.h])
 
 OSTYPE="MACOSX"
-osx = true
 case ${host} in
   *-darwin*)    
 				AC_DEFINE(OS_IS_MACOSX)
