@@ -19184,7 +19184,6 @@ done
 
 
 OSTYPE="MACOSX"
-osx = true
 case ${host} in
   *-darwin*)    
 				cat >>confdefs.h <<\_ACEOF
