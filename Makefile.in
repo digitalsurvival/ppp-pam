@@ -94,37 +94,34 @@ VERSION = @VERSION@
 am__include = @am__include@
 am__quote = @am__quote@
 install_sh = @install_sh@
-noinst_LIBRARIES = libmpi.a libppp.a
 
-libmpi_a_SOURCES = dummy.c ./$(srcdir)/mpi/mpi.c ./$(srcdir)/mpi/mpprime.c
-libmpi_a_CFLAGS = -ansi -pedantic -Wall -O3 -funsigned-char
+MYCFLAGS = -I./$(srcdir)/rijndael -I./$(srcdir)/sha2 -I./$(srcdir)/mpi \
+         -Wall -O3 -funsigned-char
 
-libppp_a_SOURCES = ./$(srcdir)/ppp/keyfiles.h ./$(srcdir)/ppp/keyfiles.c \
-                   ./$(srcdir)/ppp/ppp.h ./$(srcdir)/ppp/ppp.c \
-                   ./$(srcdir)/rijndael/rijndael.h ./$(srcdir)/rijndael/rijndael.c \
-                   ./$(srcdir)/sha2/sha2.h ./$(srcdir)/sha2/sha2.c
 
-libppp_a_CFLAGS = -Wall -I./$(srcdir)/rijndael -I./$(srcdir)/sha2 -I./$(srcdir)/mpi
+MPISRC = dummy.c ./$(srcdir)/mpi/mpi.c ./$(srcdir)/mpi/mpprime.c
+
+PPPSRC = ./$(srcdir)/ppp/keyfiles.h ./$(srcdir)/ppp/keyfiles.c \
+         ./$(srcdir)/ppp/ppp.h ./$(srcdir)/ppp/ppp.c \
+         ./$(srcdir)/rijndael/rijndael.h ./$(srcdir)/rijndael/rijndael.c \
+         ./$(srcdir)/sha2/sha2.h ./$(srcdir)/sha2/sha2.c
+
 
 bin_PROGRAMS = pppauth
 pppauth_SOURCES = \
 	./$(srcdir)/ppp/pppauth.c ./$(srcdir)/ppp/cmdline.h ./$(srcdir)/ppp/cmdline.c \
-	./$(srcdir)/ppp/print.h ./$(srcdir)/ppp/print.c ./$(srcdir)/ppp/http.h ./$(srcdir)/ppp/http.c
+	./$(srcdir)/ppp/print.h ./$(srcdir)/ppp/print.c ./$(srcdir)/ppp/http.h ./$(srcdir)/ppp/http.c \
+	$(PPPSRC) $(MPISRC)
 
-pppauth_LDADD = libmpi.a libppp.a $(UUID_LIBS)
-pppauth_CFLAGS = -Wall -I./$(srcdir)/rijndael -I./$(srcdir)/sha2 -I./$(srcdir)/mpi
+pppauth_LDADD = $(UUID_LIBS)
+pppauth_CFLAGS = $(MYCFLAGS)
 
 noinst_PROGRAMS = pam_ppp.so
-pam_ppp_so_SOURCES = ./$(srcdir)/ppp/pam_ppp.c
-pam_ppp_so_LDADD = libmpi.a libppp.a
+pam_ppp_so_SOURCES = ./$(srcdir)/ppp/pam_ppp.c $(PPPSRC) $(MPISRC)
 @OSX_TRUE@pam_ppp_so_LDFLAGS = -bundle -Ddarwin -lc -lpam $(UUID_LIBS)
 @OSX_FALSE@pam_ppp_so_LDFLAGS = -shared -lc -lpam $(UUID_LIBS)
-@OSX_TRUE@pam_ppp_so_CFLAGS = -Wall -Ddarwin -no-cpp-precomp -DPAM_DYNAMIC \
-@OSX_TRUE@                    -I./$(srcdir)/rijndael -I./$(srcdir)/sha2 -I./$(srcdir)/mpi
-
-@OSX_FALSE@pam_ppp_so_CFLAGS = -Wall -DPAM_DYNAMIC \
-@OSX_FALSE@                    -I./$(srcdir)/rijndael -I./$(srcdir)/sha2 -I./$(srcdir)/mpi
-
+@OSX_TRUE@pam_ppp_so_CFLAGS = $(MYCFLAGS) -Ddarwin -no-cpp-precomp -DPAM_DYNAMIC
+@OSX_FALSE@pam_ppp_so_CFLAGS = $(MYCFLAGS) -DPAM_DYNAMIC
 
 TESTCMD = ./pppauth --passphrase testvectors --text --name testvectors --card
 TESTFILTER = grep -v testvectors | grep -v ww.GRC.com
@@ -134,29 +131,28 @@ subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES =
-LIBRARIES = $(noinst_LIBRARIES)
-
-libmpi_a_AR = $(AR) cru
-libmpi_a_LIBADD =
-am_libmpi_a_OBJECTS = libmpi_a-dummy.$(OBJEXT) libmpi_a-mpi.$(OBJEXT) \
-	libmpi_a-mpprime.$(OBJEXT)
-libmpi_a_OBJECTS = $(am_libmpi_a_OBJECTS)
-libppp_a_AR = $(AR) cru
-libppp_a_LIBADD =
-am_libppp_a_OBJECTS = libppp_a-keyfiles.$(OBJEXT) libppp_a-ppp.$(OBJEXT) \
-	libppp_a-rijndael.$(OBJEXT) libppp_a-sha2.$(OBJEXT)
-libppp_a_OBJECTS = $(am_libppp_a_OBJECTS)
 bin_PROGRAMS = pppauth$(EXEEXT)
 noinst_PROGRAMS = pam_ppp.so$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 
-am_pam_ppp_so_OBJECTS = pam_ppp_so-pam_ppp.$(OBJEXT)
+am__objects_1 = pam_ppp_so-keyfiles.$(OBJEXT) pam_ppp_so-ppp.$(OBJEXT) \
+	pam_ppp_so-rijndael.$(OBJEXT) pam_ppp_so-sha2.$(OBJEXT)
+am__objects_2 = pam_ppp_so-dummy.$(OBJEXT) pam_ppp_so-mpi.$(OBJEXT) \
+	pam_ppp_so-mpprime.$(OBJEXT)
+am_pam_ppp_so_OBJECTS = pam_ppp_so-pam_ppp.$(OBJEXT) $(am__objects_1) \
+	$(am__objects_2)
 pam_ppp_so_OBJECTS = $(am_pam_ppp_so_OBJECTS)
-pam_ppp_so_DEPENDENCIES = libmpi.a libppp.a
+pam_ppp_so_LDADD = $(LDADD)
+pam_ppp_so_DEPENDENCIES =
+am__objects_3 = pppauth-keyfiles.$(OBJEXT) pppauth-ppp.$(OBJEXT) \
+	pppauth-rijndael.$(OBJEXT) pppauth-sha2.$(OBJEXT)
+am__objects_4 = pppauth-dummy.$(OBJEXT) pppauth-mpi.$(OBJEXT) \
+	pppauth-mpprime.$(OBJEXT)
 am_pppauth_OBJECTS = pppauth-pppauth.$(OBJEXT) pppauth-cmdline.$(OBJEXT) \
-	pppauth-print.$(OBJEXT) pppauth-http.$(OBJEXT)
+	pppauth-print.$(OBJEXT) pppauth-http.$(OBJEXT) $(am__objects_3) \
+	$(am__objects_4)
 pppauth_OBJECTS = $(am_pppauth_OBJECTS)
-pppauth_DEPENDENCIES = libmpi.a libppp.a
+pppauth_DEPENDENCIES =
 pppauth_LDFLAGS =
 
 DEFS = @DEFS@
@@ -166,18 +162,25 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/libmpi_a-dummy.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/libmpi_a-mpi.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/libmpi_a-mpprime.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/libppp_a-keyfiles.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/libppp_a-ppp.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/libppp_a-rijndael.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/libppp_a-sha2.Po \
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/pam_ppp_so-dummy.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pam_ppp_so-keyfiles.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pam_ppp_so-mpi.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pam_ppp_so-mpprime.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/pam_ppp_so-pam_ppp.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pam_ppp_so-ppp.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pam_ppp_so-rijndael.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pam_ppp_so-sha2.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/pppauth-cmdline.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pppauth-dummy.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/pppauth-http.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pppauth-keyfiles.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pppauth-mpi.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pppauth-mpprime.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pppauth-ppp.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/pppauth-pppauth.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/pppauth-print.Po
+@AMDEP_TRUE@	./$(DEPDIR)/pppauth-print.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pppauth-rijndael.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pppauth-sha2.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
@@ -186,12 +189,11 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
-DIST_SOURCES = $(libmpi_a_SOURCES) $(libppp_a_SOURCES) \
-	$(pam_ppp_so_SOURCES) $(pppauth_SOURCES)
+DIST_SOURCES = $(pam_ppp_so_SOURCES) $(pppauth_SOURCES)
 DIST_COMMON = AUTHORS Makefile.am Makefile.in aclocal.m4 compile \
 	config.guess config.sub configure configure.in depcomp \
 	install-sh ltmain.sh missing mkinstalldirs
-SOURCES = $(libmpi_a_SOURCES) $(libppp_a_SOURCES) $(pam_ppp_so_SOURCES) $(pppauth_SOURCES)
+SOURCES = $(pam_ppp_so_SOURCES) $(pppauth_SOURCES)
 
 all: all-am
 
@@ -213,24 +215,6 @@ $(srcdir)/configure:  $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENC
 
 $(ACLOCAL_M4):  configure.in 
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
-
-clean-noinstLIBRARIES:
-	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
-libmpi_a-dummy.$(OBJEXT): dummy.c
-libmpi_a-mpi.$(OBJEXT): ./$(srcdir)/mpi/mpi.c
-libmpi_a-mpprime.$(OBJEXT): ./$(srcdir)/mpi/mpprime.c
-libmpi.a: $(libmpi_a_OBJECTS) $(libmpi_a_DEPENDENCIES) 
-	-rm -f libmpi.a
-	$(libmpi_a_AR) libmpi.a $(libmpi_a_OBJECTS) $(libmpi_a_LIBADD)
-	$(RANLIB) libmpi.a
-libppp_a-keyfiles.$(OBJEXT): ./$(srcdir)/ppp/keyfiles.c
-libppp_a-ppp.$(OBJEXT): ./$(srcdir)/ppp/ppp.c
-libppp_a-rijndael.$(OBJEXT): ./$(srcdir)/rijndael/rijndael.c
-libppp_a-sha2.$(OBJEXT): ./$(srcdir)/sha2/sha2.c
-libppp.a: $(libppp_a_OBJECTS) $(libppp_a_DEPENDENCIES) 
-	-rm -f libppp.a
-	$(libppp_a_AR) libppp.a $(libppp_a_OBJECTS) $(libppp_a_LIBADD)
-	$(RANLIB) libppp.a
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
@@ -268,6 +252,13 @@ clean-noinstPROGRAMS:
 	  rm -f $$p $$f ; \
 	done
 pam_ppp_so-pam_ppp.$(OBJEXT): ./$(srcdir)/ppp/pam_ppp.c
+pam_ppp_so-keyfiles.$(OBJEXT): ./$(srcdir)/ppp/keyfiles.c
+pam_ppp_so-ppp.$(OBJEXT): ./$(srcdir)/ppp/ppp.c
+pam_ppp_so-rijndael.$(OBJEXT): ./$(srcdir)/rijndael/rijndael.c
+pam_ppp_so-sha2.$(OBJEXT): ./$(srcdir)/sha2/sha2.c
+pam_ppp_so-dummy.$(OBJEXT): dummy.c
+pam_ppp_so-mpi.$(OBJEXT): ./$(srcdir)/mpi/mpi.c
+pam_ppp_so-mpprime.$(OBJEXT): ./$(srcdir)/mpi/mpprime.c
 pam_ppp.so$(EXEEXT): $(pam_ppp_so_OBJECTS) $(pam_ppp_so_DEPENDENCIES) 
 	@rm -f pam_ppp.so$(EXEEXT)
 	$(LINK) $(pam_ppp_so_LDFLAGS) $(pam_ppp_so_OBJECTS) $(pam_ppp_so_LDADD) $(LIBS)
@@ -275,6 +266,13 @@ pppauth-pppauth.$(OBJEXT): ./$(srcdir)/ppp/pppauth.c
 pppauth-cmdline.$(OBJEXT): ./$(srcdir)/ppp/cmdline.c
 pppauth-print.$(OBJEXT): ./$(srcdir)/ppp/print.c
 pppauth-http.$(OBJEXT): ./$(srcdir)/ppp/http.c
+pppauth-keyfiles.$(OBJEXT): ./$(srcdir)/ppp/keyfiles.c
+pppauth-ppp.$(OBJEXT): ./$(srcdir)/ppp/ppp.c
+pppauth-rijndael.$(OBJEXT): ./$(srcdir)/rijndael/rijndael.c
+pppauth-sha2.$(OBJEXT): ./$(srcdir)/sha2/sha2.c
+pppauth-dummy.$(OBJEXT): dummy.c
+pppauth-mpi.$(OBJEXT): ./$(srcdir)/mpi/mpi.c
+pppauth-mpprime.$(OBJEXT): ./$(srcdir)/mpi/mpprime.c
 pppauth$(EXEEXT): $(pppauth_OBJECTS) $(pppauth_DEPENDENCIES) 
 	@rm -f pppauth$(EXEEXT)
 	$(LINK) $(pppauth_LDFLAGS) $(pppauth_OBJECTS) $(pppauth_LDADD) $(LIBS)
@@ -285,18 +283,25 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmpi_a-dummy.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmpi_a-mpi.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmpi_a-mpprime.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libppp_a-keyfiles.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libppp_a-ppp.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libppp_a-rijndael.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libppp_a-sha2.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pam_ppp_so-dummy.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pam_ppp_so-keyfiles.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pam_ppp_so-mpi.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pam_ppp_so-mpprime.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pam_ppp_so-pam_ppp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pam_ppp_so-ppp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pam_ppp_so-rijndael.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pam_ppp_so-sha2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-cmdline.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-dummy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-http.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-keyfiles.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-mpi.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-mpprime.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-ppp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-pppauth.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-print.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-rijndael.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-sha2.Po@am__quote@
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)
@@ -319,132 +324,6 @@ distclean-depend:
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LTCOMPILE) -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<
 
-libmpi_a-dummy.o: dummy.c
-@AMDEP_TRUE@	source='dummy.c' object='libmpi_a-dummy.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libmpi_a-dummy.Po' tmpdepfile='$(DEPDIR)/libmpi_a-dummy.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmpi_a_CFLAGS) $(CFLAGS) -c -o libmpi_a-dummy.o `test -f 'dummy.c' || echo '$(srcdir)/'`dummy.c
-
-libmpi_a-dummy.obj: dummy.c
-@AMDEP_TRUE@	source='dummy.c' object='libmpi_a-dummy.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libmpi_a-dummy.Po' tmpdepfile='$(DEPDIR)/libmpi_a-dummy.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmpi_a_CFLAGS) $(CFLAGS) -c -o libmpi_a-dummy.obj `cygpath -w dummy.c`
-
-libmpi_a-dummy.lo: dummy.c
-@AMDEP_TRUE@	source='dummy.c' object='libmpi_a-dummy.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libmpi_a-dummy.Plo' tmpdepfile='$(DEPDIR)/libmpi_a-dummy.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmpi_a_CFLAGS) $(CFLAGS) -c -o libmpi_a-dummy.lo `test -f 'dummy.c' || echo '$(srcdir)/'`dummy.c
-
-libmpi_a-mpi.o: ./$(srcdir)/mpi/mpi.c
-@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpi.c' object='libmpi_a-mpi.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libmpi_a-mpi.Po' tmpdepfile='$(DEPDIR)/libmpi_a-mpi.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmpi_a_CFLAGS) $(CFLAGS) -c -o libmpi_a-mpi.o `test -f './$(srcdir)/mpi/mpi.c' || echo '$(srcdir)/'`./$(srcdir)/mpi/mpi.c
-
-libmpi_a-mpi.obj: ./$(srcdir)/mpi/mpi.c
-@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpi.c' object='libmpi_a-mpi.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libmpi_a-mpi.Po' tmpdepfile='$(DEPDIR)/libmpi_a-mpi.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmpi_a_CFLAGS) $(CFLAGS) -c -o libmpi_a-mpi.obj `cygpath -w ./$(srcdir)/mpi/mpi.c`
-
-libmpi_a-mpi.lo: ./$(srcdir)/mpi/mpi.c
-@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpi.c' object='libmpi_a-mpi.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libmpi_a-mpi.Plo' tmpdepfile='$(DEPDIR)/libmpi_a-mpi.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmpi_a_CFLAGS) $(CFLAGS) -c -o libmpi_a-mpi.lo `test -f './$(srcdir)/mpi/mpi.c' || echo '$(srcdir)/'`./$(srcdir)/mpi/mpi.c
-
-libmpi_a-mpprime.o: ./$(srcdir)/mpi/mpprime.c
-@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpprime.c' object='libmpi_a-mpprime.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libmpi_a-mpprime.Po' tmpdepfile='$(DEPDIR)/libmpi_a-mpprime.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmpi_a_CFLAGS) $(CFLAGS) -c -o libmpi_a-mpprime.o `test -f './$(srcdir)/mpi/mpprime.c' || echo '$(srcdir)/'`./$(srcdir)/mpi/mpprime.c
-
-libmpi_a-mpprime.obj: ./$(srcdir)/mpi/mpprime.c
-@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpprime.c' object='libmpi_a-mpprime.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libmpi_a-mpprime.Po' tmpdepfile='$(DEPDIR)/libmpi_a-mpprime.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmpi_a_CFLAGS) $(CFLAGS) -c -o libmpi_a-mpprime.obj `cygpath -w ./$(srcdir)/mpi/mpprime.c`
-
-libmpi_a-mpprime.lo: ./$(srcdir)/mpi/mpprime.c
-@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpprime.c' object='libmpi_a-mpprime.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libmpi_a-mpprime.Plo' tmpdepfile='$(DEPDIR)/libmpi_a-mpprime.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmpi_a_CFLAGS) $(CFLAGS) -c -o libmpi_a-mpprime.lo `test -f './$(srcdir)/mpi/mpprime.c' || echo '$(srcdir)/'`./$(srcdir)/mpi/mpprime.c
-
-libppp_a-keyfiles.o: ./$(srcdir)/ppp/keyfiles.c
-@AMDEP_TRUE@	source='./$(srcdir)/ppp/keyfiles.c' object='libppp_a-keyfiles.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libppp_a-keyfiles.Po' tmpdepfile='$(DEPDIR)/libppp_a-keyfiles.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libppp_a_CFLAGS) $(CFLAGS) -c -o libppp_a-keyfiles.o `test -f './$(srcdir)/ppp/keyfiles.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/keyfiles.c
-
-libppp_a-keyfiles.obj: ./$(srcdir)/ppp/keyfiles.c
-@AMDEP_TRUE@	source='./$(srcdir)/ppp/keyfiles.c' object='libppp_a-keyfiles.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libppp_a-keyfiles.Po' tmpdepfile='$(DEPDIR)/libppp_a-keyfiles.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libppp_a_CFLAGS) $(CFLAGS) -c -o libppp_a-keyfiles.obj `cygpath -w ./$(srcdir)/ppp/keyfiles.c`
-
-libppp_a-keyfiles.lo: ./$(srcdir)/ppp/keyfiles.c
-@AMDEP_TRUE@	source='./$(srcdir)/ppp/keyfiles.c' object='libppp_a-keyfiles.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libppp_a-keyfiles.Plo' tmpdepfile='$(DEPDIR)/libppp_a-keyfiles.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libppp_a_CFLAGS) $(CFLAGS) -c -o libppp_a-keyfiles.lo `test -f './$(srcdir)/ppp/keyfiles.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/keyfiles.c
-
-libppp_a-ppp.o: ./$(srcdir)/ppp/ppp.c
-@AMDEP_TRUE@	source='./$(srcdir)/ppp/ppp.c' object='libppp_a-ppp.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libppp_a-ppp.Po' tmpdepfile='$(DEPDIR)/libppp_a-ppp.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libppp_a_CFLAGS) $(CFLAGS) -c -o libppp_a-ppp.o `test -f './$(srcdir)/ppp/ppp.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/ppp.c
-
-libppp_a-ppp.obj: ./$(srcdir)/ppp/ppp.c
-@AMDEP_TRUE@	source='./$(srcdir)/ppp/ppp.c' object='libppp_a-ppp.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libppp_a-ppp.Po' tmpdepfile='$(DEPDIR)/libppp_a-ppp.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libppp_a_CFLAGS) $(CFLAGS) -c -o libppp_a-ppp.obj `cygpath -w ./$(srcdir)/ppp/ppp.c`
-
-libppp_a-ppp.lo: ./$(srcdir)/ppp/ppp.c
-@AMDEP_TRUE@	source='./$(srcdir)/ppp/ppp.c' object='libppp_a-ppp.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libppp_a-ppp.Plo' tmpdepfile='$(DEPDIR)/libppp_a-ppp.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libppp_a_CFLAGS) $(CFLAGS) -c -o libppp_a-ppp.lo `test -f './$(srcdir)/ppp/ppp.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/ppp.c
-
-libppp_a-rijndael.o: ./$(srcdir)/rijndael/rijndael.c
-@AMDEP_TRUE@	source='./$(srcdir)/rijndael/rijndael.c' object='libppp_a-rijndael.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libppp_a-rijndael.Po' tmpdepfile='$(DEPDIR)/libppp_a-rijndael.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libppp_a_CFLAGS) $(CFLAGS) -c -o libppp_a-rijndael.o `test -f './$(srcdir)/rijndael/rijndael.c' || echo '$(srcdir)/'`./$(srcdir)/rijndael/rijndael.c
-
-libppp_a-rijndael.obj: ./$(srcdir)/rijndael/rijndael.c
-@AMDEP_TRUE@	source='./$(srcdir)/rijndael/rijndael.c' object='libppp_a-rijndael.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libppp_a-rijndael.Po' tmpdepfile='$(DEPDIR)/libppp_a-rijndael.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libppp_a_CFLAGS) $(CFLAGS) -c -o libppp_a-rijndael.obj `cygpath -w ./$(srcdir)/rijndael/rijndael.c`
-
-libppp_a-rijndael.lo: ./$(srcdir)/rijndael/rijndael.c
-@AMDEP_TRUE@	source='./$(srcdir)/rijndael/rijndael.c' object='libppp_a-rijndael.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libppp_a-rijndael.Plo' tmpdepfile='$(DEPDIR)/libppp_a-rijndael.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libppp_a_CFLAGS) $(CFLAGS) -c -o libppp_a-rijndael.lo `test -f './$(srcdir)/rijndael/rijndael.c' || echo '$(srcdir)/'`./$(srcdir)/rijndael/rijndael.c
-
-libppp_a-sha2.o: ./$(srcdir)/sha2/sha2.c
-@AMDEP_TRUE@	source='./$(srcdir)/sha2/sha2.c' object='libppp_a-sha2.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libppp_a-sha2.Po' tmpdepfile='$(DEPDIR)/libppp_a-sha2.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libppp_a_CFLAGS) $(CFLAGS) -c -o libppp_a-sha2.o `test -f './$(srcdir)/sha2/sha2.c' || echo '$(srcdir)/'`./$(srcdir)/sha2/sha2.c
-
-libppp_a-sha2.obj: ./$(srcdir)/sha2/sha2.c
-@AMDEP_TRUE@	source='./$(srcdir)/sha2/sha2.c' object='libppp_a-sha2.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libppp_a-sha2.Po' tmpdepfile='$(DEPDIR)/libppp_a-sha2.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libppp_a_CFLAGS) $(CFLAGS) -c -o libppp_a-sha2.obj `cygpath -w ./$(srcdir)/sha2/sha2.c`
-
-libppp_a-sha2.lo: ./$(srcdir)/sha2/sha2.c
-@AMDEP_TRUE@	source='./$(srcdir)/sha2/sha2.c' object='libppp_a-sha2.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/libppp_a-sha2.Plo' tmpdepfile='$(DEPDIR)/libppp_a-sha2.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libppp_a_CFLAGS) $(CFLAGS) -c -o libppp_a-sha2.lo `test -f './$(srcdir)/sha2/sha2.c' || echo '$(srcdir)/'`./$(srcdir)/sha2/sha2.c
-
 pam_ppp_so-pam_ppp.o: ./$(srcdir)/ppp/pam_ppp.c
 @AMDEP_TRUE@	source='./$(srcdir)/ppp/pam_ppp.c' object='pam_ppp_so-pam_ppp.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-pam_ppp.Po' tmpdepfile='$(DEPDIR)/pam_ppp_so-pam_ppp.TPo' @AMDEPBACKSLASH@
@@ -462,6 +341,132 @@ pam_ppp_so-pam_ppp.lo: ./$(srcdir)/ppp/pam_ppp.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-pam_ppp.Plo' tmpdepfile='$(DEPDIR)/pam_ppp_so-pam_ppp.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-pam_ppp.lo `test -f './$(srcdir)/ppp/pam_ppp.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/pam_ppp.c
+
+pam_ppp_so-keyfiles.o: ./$(srcdir)/ppp/keyfiles.c
+@AMDEP_TRUE@	source='./$(srcdir)/ppp/keyfiles.c' object='pam_ppp_so-keyfiles.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-keyfiles.Po' tmpdepfile='$(DEPDIR)/pam_ppp_so-keyfiles.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-keyfiles.o `test -f './$(srcdir)/ppp/keyfiles.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/keyfiles.c
+
+pam_ppp_so-keyfiles.obj: ./$(srcdir)/ppp/keyfiles.c
+@AMDEP_TRUE@	source='./$(srcdir)/ppp/keyfiles.c' object='pam_ppp_so-keyfiles.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-keyfiles.Po' tmpdepfile='$(DEPDIR)/pam_ppp_so-keyfiles.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-keyfiles.obj `cygpath -w ./$(srcdir)/ppp/keyfiles.c`
+
+pam_ppp_so-keyfiles.lo: ./$(srcdir)/ppp/keyfiles.c
+@AMDEP_TRUE@	source='./$(srcdir)/ppp/keyfiles.c' object='pam_ppp_so-keyfiles.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-keyfiles.Plo' tmpdepfile='$(DEPDIR)/pam_ppp_so-keyfiles.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-keyfiles.lo `test -f './$(srcdir)/ppp/keyfiles.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/keyfiles.c
+
+pam_ppp_so-ppp.o: ./$(srcdir)/ppp/ppp.c
+@AMDEP_TRUE@	source='./$(srcdir)/ppp/ppp.c' object='pam_ppp_so-ppp.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-ppp.Po' tmpdepfile='$(DEPDIR)/pam_ppp_so-ppp.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-ppp.o `test -f './$(srcdir)/ppp/ppp.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/ppp.c
+
+pam_ppp_so-ppp.obj: ./$(srcdir)/ppp/ppp.c
+@AMDEP_TRUE@	source='./$(srcdir)/ppp/ppp.c' object='pam_ppp_so-ppp.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-ppp.Po' tmpdepfile='$(DEPDIR)/pam_ppp_so-ppp.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-ppp.obj `cygpath -w ./$(srcdir)/ppp/ppp.c`
+
+pam_ppp_so-ppp.lo: ./$(srcdir)/ppp/ppp.c
+@AMDEP_TRUE@	source='./$(srcdir)/ppp/ppp.c' object='pam_ppp_so-ppp.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-ppp.Plo' tmpdepfile='$(DEPDIR)/pam_ppp_so-ppp.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-ppp.lo `test -f './$(srcdir)/ppp/ppp.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/ppp.c
+
+pam_ppp_so-rijndael.o: ./$(srcdir)/rijndael/rijndael.c
+@AMDEP_TRUE@	source='./$(srcdir)/rijndael/rijndael.c' object='pam_ppp_so-rijndael.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-rijndael.Po' tmpdepfile='$(DEPDIR)/pam_ppp_so-rijndael.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-rijndael.o `test -f './$(srcdir)/rijndael/rijndael.c' || echo '$(srcdir)/'`./$(srcdir)/rijndael/rijndael.c
+
+pam_ppp_so-rijndael.obj: ./$(srcdir)/rijndael/rijndael.c
+@AMDEP_TRUE@	source='./$(srcdir)/rijndael/rijndael.c' object='pam_ppp_so-rijndael.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-rijndael.Po' tmpdepfile='$(DEPDIR)/pam_ppp_so-rijndael.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-rijndael.obj `cygpath -w ./$(srcdir)/rijndael/rijndael.c`
+
+pam_ppp_so-rijndael.lo: ./$(srcdir)/rijndael/rijndael.c
+@AMDEP_TRUE@	source='./$(srcdir)/rijndael/rijndael.c' object='pam_ppp_so-rijndael.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-rijndael.Plo' tmpdepfile='$(DEPDIR)/pam_ppp_so-rijndael.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-rijndael.lo `test -f './$(srcdir)/rijndael/rijndael.c' || echo '$(srcdir)/'`./$(srcdir)/rijndael/rijndael.c
+
+pam_ppp_so-sha2.o: ./$(srcdir)/sha2/sha2.c
+@AMDEP_TRUE@	source='./$(srcdir)/sha2/sha2.c' object='pam_ppp_so-sha2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-sha2.Po' tmpdepfile='$(DEPDIR)/pam_ppp_so-sha2.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-sha2.o `test -f './$(srcdir)/sha2/sha2.c' || echo '$(srcdir)/'`./$(srcdir)/sha2/sha2.c
+
+pam_ppp_so-sha2.obj: ./$(srcdir)/sha2/sha2.c
+@AMDEP_TRUE@	source='./$(srcdir)/sha2/sha2.c' object='pam_ppp_so-sha2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-sha2.Po' tmpdepfile='$(DEPDIR)/pam_ppp_so-sha2.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-sha2.obj `cygpath -w ./$(srcdir)/sha2/sha2.c`
+
+pam_ppp_so-sha2.lo: ./$(srcdir)/sha2/sha2.c
+@AMDEP_TRUE@	source='./$(srcdir)/sha2/sha2.c' object='pam_ppp_so-sha2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-sha2.Plo' tmpdepfile='$(DEPDIR)/pam_ppp_so-sha2.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-sha2.lo `test -f './$(srcdir)/sha2/sha2.c' || echo '$(srcdir)/'`./$(srcdir)/sha2/sha2.c
+
+pam_ppp_so-dummy.o: dummy.c
+@AMDEP_TRUE@	source='dummy.c' object='pam_ppp_so-dummy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-dummy.Po' tmpdepfile='$(DEPDIR)/pam_ppp_so-dummy.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-dummy.o `test -f 'dummy.c' || echo '$(srcdir)/'`dummy.c
+
+pam_ppp_so-dummy.obj: dummy.c
+@AMDEP_TRUE@	source='dummy.c' object='pam_ppp_so-dummy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-dummy.Po' tmpdepfile='$(DEPDIR)/pam_ppp_so-dummy.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-dummy.obj `cygpath -w dummy.c`
+
+pam_ppp_so-dummy.lo: dummy.c
+@AMDEP_TRUE@	source='dummy.c' object='pam_ppp_so-dummy.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-dummy.Plo' tmpdepfile='$(DEPDIR)/pam_ppp_so-dummy.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-dummy.lo `test -f 'dummy.c' || echo '$(srcdir)/'`dummy.c
+
+pam_ppp_so-mpi.o: ./$(srcdir)/mpi/mpi.c
+@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpi.c' object='pam_ppp_so-mpi.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-mpi.Po' tmpdepfile='$(DEPDIR)/pam_ppp_so-mpi.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-mpi.o `test -f './$(srcdir)/mpi/mpi.c' || echo '$(srcdir)/'`./$(srcdir)/mpi/mpi.c
+
+pam_ppp_so-mpi.obj: ./$(srcdir)/mpi/mpi.c
+@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpi.c' object='pam_ppp_so-mpi.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-mpi.Po' tmpdepfile='$(DEPDIR)/pam_ppp_so-mpi.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-mpi.obj `cygpath -w ./$(srcdir)/mpi/mpi.c`
+
+pam_ppp_so-mpi.lo: ./$(srcdir)/mpi/mpi.c
+@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpi.c' object='pam_ppp_so-mpi.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-mpi.Plo' tmpdepfile='$(DEPDIR)/pam_ppp_so-mpi.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-mpi.lo `test -f './$(srcdir)/mpi/mpi.c' || echo '$(srcdir)/'`./$(srcdir)/mpi/mpi.c
+
+pam_ppp_so-mpprime.o: ./$(srcdir)/mpi/mpprime.c
+@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpprime.c' object='pam_ppp_so-mpprime.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-mpprime.Po' tmpdepfile='$(DEPDIR)/pam_ppp_so-mpprime.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-mpprime.o `test -f './$(srcdir)/mpi/mpprime.c' || echo '$(srcdir)/'`./$(srcdir)/mpi/mpprime.c
+
+pam_ppp_so-mpprime.obj: ./$(srcdir)/mpi/mpprime.c
+@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpprime.c' object='pam_ppp_so-mpprime.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-mpprime.Po' tmpdepfile='$(DEPDIR)/pam_ppp_so-mpprime.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-mpprime.obj `cygpath -w ./$(srcdir)/mpi/mpprime.c`
+
+pam_ppp_so-mpprime.lo: ./$(srcdir)/mpi/mpprime.c
+@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpprime.c' object='pam_ppp_so-mpprime.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pam_ppp_so-mpprime.Plo' tmpdepfile='$(DEPDIR)/pam_ppp_so-mpprime.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pam_ppp_so_CFLAGS) $(CFLAGS) -c -o pam_ppp_so-mpprime.lo `test -f './$(srcdir)/mpi/mpprime.c' || echo '$(srcdir)/'`./$(srcdir)/mpi/mpprime.c
 
 pppauth-pppauth.o: ./$(srcdir)/ppp/pppauth.c
 @AMDEP_TRUE@	source='./$(srcdir)/ppp/pppauth.c' object='pppauth-pppauth.o' libtool=no @AMDEPBACKSLASH@
@@ -534,6 +539,132 @@ pppauth-http.lo: ./$(srcdir)/ppp/http.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-http.Plo' tmpdepfile='$(DEPDIR)/pppauth-http.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-http.lo `test -f './$(srcdir)/ppp/http.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/http.c
+
+pppauth-keyfiles.o: ./$(srcdir)/ppp/keyfiles.c
+@AMDEP_TRUE@	source='./$(srcdir)/ppp/keyfiles.c' object='pppauth-keyfiles.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-keyfiles.Po' tmpdepfile='$(DEPDIR)/pppauth-keyfiles.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-keyfiles.o `test -f './$(srcdir)/ppp/keyfiles.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/keyfiles.c
+
+pppauth-keyfiles.obj: ./$(srcdir)/ppp/keyfiles.c
+@AMDEP_TRUE@	source='./$(srcdir)/ppp/keyfiles.c' object='pppauth-keyfiles.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-keyfiles.Po' tmpdepfile='$(DEPDIR)/pppauth-keyfiles.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-keyfiles.obj `cygpath -w ./$(srcdir)/ppp/keyfiles.c`
+
+pppauth-keyfiles.lo: ./$(srcdir)/ppp/keyfiles.c
+@AMDEP_TRUE@	source='./$(srcdir)/ppp/keyfiles.c' object='pppauth-keyfiles.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-keyfiles.Plo' tmpdepfile='$(DEPDIR)/pppauth-keyfiles.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-keyfiles.lo `test -f './$(srcdir)/ppp/keyfiles.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/keyfiles.c
+
+pppauth-ppp.o: ./$(srcdir)/ppp/ppp.c
+@AMDEP_TRUE@	source='./$(srcdir)/ppp/ppp.c' object='pppauth-ppp.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-ppp.Po' tmpdepfile='$(DEPDIR)/pppauth-ppp.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-ppp.o `test -f './$(srcdir)/ppp/ppp.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/ppp.c
+
+pppauth-ppp.obj: ./$(srcdir)/ppp/ppp.c
+@AMDEP_TRUE@	source='./$(srcdir)/ppp/ppp.c' object='pppauth-ppp.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-ppp.Po' tmpdepfile='$(DEPDIR)/pppauth-ppp.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-ppp.obj `cygpath -w ./$(srcdir)/ppp/ppp.c`
+
+pppauth-ppp.lo: ./$(srcdir)/ppp/ppp.c
+@AMDEP_TRUE@	source='./$(srcdir)/ppp/ppp.c' object='pppauth-ppp.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-ppp.Plo' tmpdepfile='$(DEPDIR)/pppauth-ppp.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-ppp.lo `test -f './$(srcdir)/ppp/ppp.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/ppp.c
+
+pppauth-rijndael.o: ./$(srcdir)/rijndael/rijndael.c
+@AMDEP_TRUE@	source='./$(srcdir)/rijndael/rijndael.c' object='pppauth-rijndael.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-rijndael.Po' tmpdepfile='$(DEPDIR)/pppauth-rijndael.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-rijndael.o `test -f './$(srcdir)/rijndael/rijndael.c' || echo '$(srcdir)/'`./$(srcdir)/rijndael/rijndael.c
+
+pppauth-rijndael.obj: ./$(srcdir)/rijndael/rijndael.c
+@AMDEP_TRUE@	source='./$(srcdir)/rijndael/rijndael.c' object='pppauth-rijndael.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-rijndael.Po' tmpdepfile='$(DEPDIR)/pppauth-rijndael.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-rijndael.obj `cygpath -w ./$(srcdir)/rijndael/rijndael.c`
+
+pppauth-rijndael.lo: ./$(srcdir)/rijndael/rijndael.c
+@AMDEP_TRUE@	source='./$(srcdir)/rijndael/rijndael.c' object='pppauth-rijndael.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-rijndael.Plo' tmpdepfile='$(DEPDIR)/pppauth-rijndael.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-rijndael.lo `test -f './$(srcdir)/rijndael/rijndael.c' || echo '$(srcdir)/'`./$(srcdir)/rijndael/rijndael.c
+
+pppauth-sha2.o: ./$(srcdir)/sha2/sha2.c
+@AMDEP_TRUE@	source='./$(srcdir)/sha2/sha2.c' object='pppauth-sha2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-sha2.Po' tmpdepfile='$(DEPDIR)/pppauth-sha2.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-sha2.o `test -f './$(srcdir)/sha2/sha2.c' || echo '$(srcdir)/'`./$(srcdir)/sha2/sha2.c
+
+pppauth-sha2.obj: ./$(srcdir)/sha2/sha2.c
+@AMDEP_TRUE@	source='./$(srcdir)/sha2/sha2.c' object='pppauth-sha2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-sha2.Po' tmpdepfile='$(DEPDIR)/pppauth-sha2.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-sha2.obj `cygpath -w ./$(srcdir)/sha2/sha2.c`
+
+pppauth-sha2.lo: ./$(srcdir)/sha2/sha2.c
+@AMDEP_TRUE@	source='./$(srcdir)/sha2/sha2.c' object='pppauth-sha2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-sha2.Plo' tmpdepfile='$(DEPDIR)/pppauth-sha2.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-sha2.lo `test -f './$(srcdir)/sha2/sha2.c' || echo '$(srcdir)/'`./$(srcdir)/sha2/sha2.c
+
+pppauth-dummy.o: dummy.c
+@AMDEP_TRUE@	source='dummy.c' object='pppauth-dummy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-dummy.Po' tmpdepfile='$(DEPDIR)/pppauth-dummy.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-dummy.o `test -f 'dummy.c' || echo '$(srcdir)/'`dummy.c
+
+pppauth-dummy.obj: dummy.c
+@AMDEP_TRUE@	source='dummy.c' object='pppauth-dummy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-dummy.Po' tmpdepfile='$(DEPDIR)/pppauth-dummy.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-dummy.obj `cygpath -w dummy.c`
+
+pppauth-dummy.lo: dummy.c
+@AMDEP_TRUE@	source='dummy.c' object='pppauth-dummy.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-dummy.Plo' tmpdepfile='$(DEPDIR)/pppauth-dummy.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-dummy.lo `test -f 'dummy.c' || echo '$(srcdir)/'`dummy.c
+
+pppauth-mpi.o: ./$(srcdir)/mpi/mpi.c
+@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpi.c' object='pppauth-mpi.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-mpi.Po' tmpdepfile='$(DEPDIR)/pppauth-mpi.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-mpi.o `test -f './$(srcdir)/mpi/mpi.c' || echo '$(srcdir)/'`./$(srcdir)/mpi/mpi.c
+
+pppauth-mpi.obj: ./$(srcdir)/mpi/mpi.c
+@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpi.c' object='pppauth-mpi.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-mpi.Po' tmpdepfile='$(DEPDIR)/pppauth-mpi.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-mpi.obj `cygpath -w ./$(srcdir)/mpi/mpi.c`
+
+pppauth-mpi.lo: ./$(srcdir)/mpi/mpi.c
+@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpi.c' object='pppauth-mpi.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-mpi.Plo' tmpdepfile='$(DEPDIR)/pppauth-mpi.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-mpi.lo `test -f './$(srcdir)/mpi/mpi.c' || echo '$(srcdir)/'`./$(srcdir)/mpi/mpi.c
+
+pppauth-mpprime.o: ./$(srcdir)/mpi/mpprime.c
+@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpprime.c' object='pppauth-mpprime.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-mpprime.Po' tmpdepfile='$(DEPDIR)/pppauth-mpprime.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-mpprime.o `test -f './$(srcdir)/mpi/mpprime.c' || echo '$(srcdir)/'`./$(srcdir)/mpi/mpprime.c
+
+pppauth-mpprime.obj: ./$(srcdir)/mpi/mpprime.c
+@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpprime.c' object='pppauth-mpprime.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-mpprime.Po' tmpdepfile='$(DEPDIR)/pppauth-mpprime.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-mpprime.obj `cygpath -w ./$(srcdir)/mpi/mpprime.c`
+
+pppauth-mpprime.lo: ./$(srcdir)/mpi/mpprime.c
+@AMDEP_TRUE@	source='./$(srcdir)/mpi/mpprime.c' object='pppauth-mpprime.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-mpprime.Plo' tmpdepfile='$(DEPDIR)/pppauth-mpprime.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-mpprime.lo `test -f './$(srcdir)/mpi/mpprime.c' || echo '$(srcdir)/'`./$(srcdir)/mpi/mpprime.c
 CCDEPMODE = @CCDEPMODE@
 
 mostlyclean-libtool:
@@ -671,7 +802,7 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-am
-all-am: Makefile $(LIBRARIES) $(PROGRAMS)
+all-am: Makefile $(PROGRAMS)
 
 installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
@@ -704,7 +835,7 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-libtool \
-	clean-noinstLIBRARIES clean-noinstPROGRAMS mostlyclean-am
+	clean-noinstPROGRAMS mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -742,18 +873,17 @@ mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 uninstall-am: uninstall-binPROGRAMS uninstall-info-am
 
 .PHONY: GTAGS all all-am check check-am clean clean-binPROGRAMS \
-	clean-generic clean-libtool clean-noinstLIBRARIES \
-	clean-noinstPROGRAMS dist dist-all dist-gzip distcheck \
-	distclean distclean-compile distclean-depend distclean-generic \
-	distclean-libtool distclean-tags distcleancheck distdir dvi \
-	dvi-am info info-am install install-am install-binPROGRAMS \
-	install-data install-data-am install-exec install-exec-am \
-	install-exec-local install-info install-info-am install-man \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	tags uninstall uninstall-am uninstall-binPROGRAMS \
-	uninstall-info-am
+	clean-generic clean-libtool clean-noinstPROGRAMS dist dist-all \
+	dist-gzip distcheck distclean distclean-compile \
+	distclean-depend distclean-generic distclean-libtool \
+	distclean-tags distcleancheck distdir dvi dvi-am info info-am \
+	install install-am install-binPROGRAMS install-data \
+	install-data-am install-exec install-exec-am install-exec-local \
+	install-info install-info-am install-man install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool tags uninstall \
+	uninstall-am uninstall-binPROGRAMS uninstall-info-am
 
 
 dummy.c: logtab.h mpi-types.h

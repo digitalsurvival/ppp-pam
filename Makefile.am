@@ -1,7 +1,8 @@
-noinst_LIBRARIES = libmpi.a libppp.a
 
-libmpi_a_SOURCES = dummy.c ./$(srcdir)/mpi/mpi.c ./$(srcdir)/mpi/mpprime.c
-libmpi_a_CFLAGS = -ansi -pedantic -Wall -O3 -funsigned-char
+MYCFLAGS = -I./$(srcdir)/rijndael -I./$(srcdir)/sha2 -I./$(srcdir)/mpi \
+         -Wall -O3 -funsigned-char
+
+MPISRC = dummy.c ./$(srcdir)/mpi/mpi.c ./$(srcdir)/mpi/mpprime.c
 
 dummy.c: logtab.h mpi-types.h
 	echo "#include <stdio.h>" > dummy.c
@@ -12,31 +13,28 @@ logtab.h: ./$(srcdir)/mpi/make-logtab
 mpi-types.h: ./$(srcdir)/mpi/types.pl
 	$(PERL) ./$(srcdir)/mpi/types.pl 2 $(CC) "$(libmpi_a_CFLAGS)" > $@
 
-libppp_a_SOURCES = ./$(srcdir)/ppp/keyfiles.h ./$(srcdir)/ppp/keyfiles.c \
-                   ./$(srcdir)/ppp/ppp.h ./$(srcdir)/ppp/ppp.c \
-                   ./$(srcdir)/rijndael/rijndael.h ./$(srcdir)/rijndael/rijndael.c \
-                   ./$(srcdir)/sha2/sha2.h ./$(srcdir)/sha2/sha2.c
-libppp_a_CFLAGS = -Wall -I./$(srcdir)/rijndael -I./$(srcdir)/sha2 -I./$(srcdir)/mpi
+PPPSRC = ./$(srcdir)/ppp/keyfiles.h ./$(srcdir)/ppp/keyfiles.c \
+         ./$(srcdir)/ppp/ppp.h ./$(srcdir)/ppp/ppp.c \
+         ./$(srcdir)/rijndael/rijndael.h ./$(srcdir)/rijndael/rijndael.c \
+         ./$(srcdir)/sha2/sha2.h ./$(srcdir)/sha2/sha2.c
 
 bin_PROGRAMS = pppauth
 pppauth_SOURCES = \
 	./$(srcdir)/ppp/pppauth.c ./$(srcdir)/ppp/cmdline.h ./$(srcdir)/ppp/cmdline.c \
-	./$(srcdir)/ppp/print.h ./$(srcdir)/ppp/print.c ./$(srcdir)/ppp/http.h ./$(srcdir)/ppp/http.c
-pppauth_LDADD = libmpi.a libppp.a $(UUID_LIBS)
-pppauth_CFLAGS = -Wall -I./$(srcdir)/rijndael -I./$(srcdir)/sha2 -I./$(srcdir)/mpi
+	./$(srcdir)/ppp/print.h ./$(srcdir)/ppp/print.c ./$(srcdir)/ppp/http.h ./$(srcdir)/ppp/http.c \
+	$(PPPSRC) $(MPISRC)
+pppauth_LDADD = $(UUID_LIBS)
+pppauth_CFLAGS = $(MYCFLAGS)
 
 
 noinst_PROGRAMS = pam_ppp.so
-pam_ppp_so_SOURCES = ./$(srcdir)/ppp/pam_ppp.c
-pam_ppp_so_LDADD = libmpi.a libppp.a
+pam_ppp_so_SOURCES = ./$(srcdir)/ppp/pam_ppp.c $(PPPSRC) $(MPISRC)
 if OSX
 pam_ppp_so_LDFLAGS = -bundle -Ddarwin -lc -lpam $(UUID_LIBS)
-pam_ppp_so_CFLAGS = -Wall -Ddarwin -no-cpp-precomp -DPAM_DYNAMIC \
-                    -I./$(srcdir)/rijndael -I./$(srcdir)/sha2 -I./$(srcdir)/mpi
+pam_ppp_so_CFLAGS = $(MYCFLAGS) -Ddarwin -no-cpp-precomp -DPAM_DYNAMIC
 else	
 pam_ppp_so_LDFLAGS = -shared -lc -lpam $(UUID_LIBS)
-pam_ppp_so_CFLAGS = -Wall -DPAM_DYNAMIC \
-                    -I./$(srcdir)/rijndael -I./$(srcdir)/sha2 -I./$(srcdir)/mpi
+pam_ppp_so_CFLAGS = $(MYCFLAGS) -DPAM_DYNAMIC
 endif
 
 TESTCMD = ./pppauth --passphrase testvectors --text --name testvectors --card
