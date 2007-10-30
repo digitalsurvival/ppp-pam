@@ -894,6 +894,8 @@ logtab.h: ./$(srcdir)/mpi/make-logtab
 
 mpi-types.h: ./$(srcdir)/mpi/types.pl
 	$(PERL) ./$(srcdir)/mpi/types.pl 2 $(CC) "$(MYCFLAGS)" > $@
+
+./$(srcdir)/ppp/pppauth.c: mpi-types.h
 test: pppauth
 	@cat ./$(srcdir)/ppp/testvectors.txt | $(TESTFILTER) > testvectors.txt
 	@$(TESTCMD) 1 | $(TESTFILTER) > testoutput.txt

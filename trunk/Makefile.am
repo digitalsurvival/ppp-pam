@@ -18,6 +18,8 @@ PPPSRC = ./$(srcdir)/ppp/keyfiles.h ./$(srcdir)/ppp/keyfiles.c \
          ./$(srcdir)/rijndael/rijndael.h ./$(srcdir)/rijndael/rijndael.c \
          ./$(srcdir)/sha2/sha2.h ./$(srcdir)/sha2/sha2.c
 
+./$(srcdir)/ppp/pppauth.c: mpi-types.h
+
 bin_PROGRAMS = pppauth
 pppauth_SOURCES = \
 	./$(srcdir)/ppp/pppauth.c ./$(srcdir)/ppp/cmdline.h ./$(srcdir)/ppp/cmdline.c \
