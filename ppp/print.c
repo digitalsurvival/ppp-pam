@@ -26,7 +26,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -38,21 +37,6 @@ void printInit() {
 }   
 
 void printCleanup() {
-}
-
-void printKey (mp_int *key) {
-	int i;
-	static unsigned char buf[48];
-
-	for (i=0; i<48; i++) {
-		buf[i] = '\x00';
-	}
-	i = 48 - mp_unsigned_bin_size(key);
-	mp_to_unsigned_bin(key, buf+i);
-	             
-	for (i=0; i<48; i++) {
-		printf("%2.2x", buf[48-i-1]);
-	}
 }
 
 void printCard(mp_int *nCard) {
