@@ -53,6 +53,8 @@ static mp_int d_maxPasscodes;
 static char d_passcode[5] = "";
 static char *d_prompt = NULL;
 static int d_prompt_len = 0;
+static char *d_code = NULL;
+static int d_code_len = 0;
 static char *d_buf = NULL;
 static int d_buflen = 0;
 
@@ -261,6 +263,8 @@ void pppCleanup() {
 	
 	_zero_bytes((unsigned char *)d_prompt, d_prompt_len);
 	free(d_prompt);
+	_zero_bytes((unsigned char *)d_code, d_code_len);
+	free(d_code);
 	_zero_bytes((unsigned char *)d_buf, d_buflen);
 	free(d_buf);
 }
@@ -304,7 +308,7 @@ char *mpToDecimalString(mp_int *mp, char groupChar) {
 	return d_buf;	
 }
 
-char *currPrompt() {
+char *currCode() {
 	mp_int mp;
 	mp_int row;
 	unsigned int c, r;
@@ -326,13 +330,21 @@ char *currPrompt() {
 	mp_clear(&mp);
 	mp_clear(&row);
 	
-	free(d_prompt);
-	d_prompt = malloc(strlen("Passcode []:") + strlen(cardstr) + 6);
-	sprintf(d_prompt, "Passcode %d%c [%s]: ",++r, c+'A', cardstr);
+	free(d_code);
+	d_code = malloc(strlen("[]") + strlen(cardstr) + 6);
+	sprintf(d_code, "%d%c [%s]",++r, c+'A', cardstr);
 	
 	mp_clear(&row);
 	c = r = 0;
 	
+	return d_code;
+}
+
+char *currPrompt() {
+	free(d_prompt);
+	d_prompt = malloc(strlen("Passcode : ") + strlen(currCode()) + 6);
+	sprintf(d_prompt, "Passcode %s: ", currCode());
+
 	return d_prompt;
 }
 
@@ -501,4 +513,17 @@ void getPasscodeBlock(mp_int *startingPasscodeNum, int qty, char *output) {
 	}
 	
 	ofs = 0;
+}
+
+void getNumPrintedCodesRemaining(mp_int *mp) {
+	mp_int last;
+	mp_init(&last);
+	
+	mp_int *curr = currPasscodeNum();
+	mp_add_d(lastCardGenerated(), 1 ,&last);
+	mp_mul_d(&last, 70 ,&last);
+	mp_sub(&last, curr, &last);
+	
+	mp_copy(&last, mp);
+	mp_clear(&last);
 }
