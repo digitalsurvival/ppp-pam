@@ -5,24 +5,18 @@ _*Please note that these instructions differ from the initial instructions publi
 
 = Mac OSX =
 
-=== Leopard ===
+The following should work on *Tiger* and *Leopard* for both *Intel* and *Power PC* Macs:
 
-It's not known yet whether this works on Leopard.  If you feel daring, follow the instructions below for Tiger and report back with your results.
-
-=== Tiger ===
-
-~~At the moment, the code has only reported to build properly on Intel-based macs.  Support for powerpc macs is planned, however access to a powerpc machine for testing is holding up development.~~
-
-_It's been reported that this now works for powerpc macs as well as Intel._
-
- # Download version 0.1 of the source code from [http://ppp-pam.googlecode.com/files/ppp-pam-0.1.tar.gz here] and save to your disk.
+ # Download version 0.2 of the source code from [http://ppp-pam.googlecode.com/files/ppp-pam-0.2.tar.gz here] and save to your disk.
  # Open a terminal window and extract the source files.
 {{{
-tar -xvzf ppp-pam-0.1.tar.gz
+tar -xvzf ppp-pam-0.2.tar.gz
 cd ppp-pam
 }}}
  # Build the code
 {{{
+cd build
+../configure
 make
 }}}
  # Test to confirm it built correctly
@@ -58,34 +52,36 @@ ssh localhost
 
 = Linux =
 
-The code is now building under linux thanks to the help of Michael.Strecke, gavin.kinsey, and justarandomgeek!  I've taken their [http://code.google.com/p/ppp-pam/issues/detail?id=4 patches] and incorporated them in source code.  I am now able to get pppauth to work and generate keys and passcards, etc.  Unfortunately, when I try to log in, pam_ppp.so appears to not be working, as I always get the permission denied message.
+It's still not working reliably enough on all distributions of linux.  I need to do more portability work, but it is getting closer!
 
-If you want to experiment with it:
-
- # Download revision 24 of the source code.
+ # Make sure you have the appropriate packages installed.  On a fresh Ubuntu distribution, I had to install the following packages:
+   * subversion
+   * make
+   * gcc
+   * g++
+   * libc6-dev
+   * uuid-dev
+   * libpam0g-dev
+   * openssh-server
+ # Follow steps 1-5 of the Mac OSX installation above.
+ # Enable PPP authentication for ssh connections.  (Feel free to use your preferred editor rather than vi).  The specifics here may vary depending on your linux distribution.  If you find that they deviate significantly, please post a comment here.
 {{{
-svn checkout -r 24 http://ppp-pam.googlecode.com/svn/trunk ppp-pam
-cd ppp-pam
+sudo vi /etc/pam.d/ssh
 }}}
- # Build the code.
-{{{
-cd build
-../configure
-make
-}}}
- # Test to confirm it built correctly
-{{{
-make test
-}}}
- # Install the {{{pppauth}}} utility and PAM module in the appropriate folders. (You will need to enter your administrator password to run the following command).
-{{{
-sudo make install
-}}}
+  Enter the following line just below {{{@include common-auth}}}
+  {{{
+  auth       required       pam_ppp.so
+  }}}
+ # Close and save the file.
  # Create a PPP sequence key for your user account.
 {{{
 pppauth --key
 }}}
- # Generate a passcard.
+ # Generate a passcard.  Print or save it -- you'll need it to log in over SSH.
 {{{
-pppauth --text --card 3
+pppauth --text --next 1
+}}}
+ # Try logging in to test it.
+{{{
+ssh localhost
 }}}
