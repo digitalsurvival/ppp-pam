@@ -147,6 +147,15 @@ int main( int argc, char * argv[] )
 			printf("Passcode number %s\n", mpToDecimalString(&mp, ','));
 			mp_clear(&mp);
 		}
+	} 
+	
+	if ( ! fPasscode && fVerbose) {
+		printf("Current passcode: %s\n", currCode());
+		mp_int mp;
+		mp_init(&mp);
+		getNumPrintedCodesRemaining(&mp);
+		printf("Printed passcodes remaining: %s\n", mpToDecimalString(&mp, ','));
+		mp_clear(&mp);
 	}
 	
 	/* Print cards or individual passcode */

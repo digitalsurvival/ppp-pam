@@ -39,6 +39,7 @@
 void pppInit();
 void pppCleanup();
 char * mpToDecimalString(mp_int *mp, char groupChar);
+char *currCode();
 char *currPrompt();
 int pppAuthenticate(char *attempt);
 mp_int *seqKey();
@@ -57,5 +58,6 @@ void generateRandomSequenceKey();
 char *getPasscode(mp_int *n);
 void getPasscodeBlock(mp_int *startingPasscodeNum, int qty, char *output);
 void calculateCardContainingPasscode(mp_int *passcodeNum, mp_int *cardNum);
+void getNumPrintedCodesRemaining(mp_int *mp);
 
 #endif
