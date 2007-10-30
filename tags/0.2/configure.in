@@ -1,0 +1,33 @@
+AC_PREREQ(2.59)
+
+AC_INIT([pppauth], [0.2])
+
+AM_INIT_AUTOMAKE([1.6.3 foreign])
+
+AC_PROG_CC
+AC_PROG_LIBTOOL
+AC_PATH_PROGS(PERL, perl)
+
+AC_CHECK_HEADERS([uuid/uuid.h])
+AC_CHECK_LIB(uuid, uuid_generate, UUID_LIBS="-luuid")
+AC_SUBST(UUID_LIBS)
+
+AC_CHECK_HEADERS([security/pam_modules.h])
+
+OSTYPE="MACOSX"
+case ${host} in
+  *-darwin*)    
+				AC_DEFINE(OS_IS_MACOSX)
+				OSTYPE="MACOSX" ;;
+  *-linux*)     
+				AC_DEFINE(OS_IS_LINUX)
+				OSTYPE="LINUX" ;;
+esac
+AC_SUBST(OSTYPE)
+AM_CONDITIONAL(OSX, [test "$OSTYPE" != "LINUX"])
+
+AC_PREFIX_DEFAULT(/usr)
+AC_PREFIX_PROGRAM(ssh-keygen) 
+
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
