@@ -37,11 +37,6 @@ sudo open -a TextEdit /etc/pam.d/sshd
   auth       required       pam_ppp.so
   }}}
  # Save the file and close TextEdit.
- # Make sure you have the following settings in {{{/etc/ssh/sshd_config}}}:
-{{{
-ChallengeResponseAuthentication yes
-UsePAM yes
-}}}
  # Create a PPP sequence key for your user account.
 {{{
 pppauth --key
@@ -78,6 +73,11 @@ sudo vi /etc/pam.d/ssh
   auth       required       pam_ppp.so
   }}}
  # Close and save the file.
+ # Make sure you have the following settings in {{{/etc/ssh/sshd_config}}}:
+{{{
+ChallengeResponseAuthentication yes
+UsePAM yes
+}}}
  # Create a PPP sequence key for your user account.
 {{{
 pppauth --key
