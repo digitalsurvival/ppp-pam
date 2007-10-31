@@ -111,7 +111,7 @@ void printCard(mp_int *nCard) {
 	for (j=0; j<38-strlen(hname)-strlen(cn)-2; j++)
 		printf(" ");
 	printf("[%s]\n", cn);
-	printf("      A    B    C    D    E    F    G\n");
+	printf("    A    B    C    D    E    F    G\n");
 	         
 	j = 0;
 	int r, c;

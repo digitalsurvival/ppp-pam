@@ -40,7 +40,7 @@ pam_ppp_so_CFLAGS = $(MYCFLAGS) -DPAM_DYNAMIC
 endif
 
 TESTCMD = ./pppauth --passphrase testvectors --text --name testvectors --card
-TESTFILTER = grep -v testvectors | grep -v ww.GRC.com
+TESTFILTER = grep -v testvectors
 test: pppauth
 	@cat ./$(srcdir)/ppp/testvectors.txt | $(TESTFILTER) > testvectors.txt
 	@$(TESTCMD) 1 | $(TESTFILTER) > testoutput.txt
@@ -55,6 +55,15 @@ test: pppauth
 	@$(TESTCMD) 4294967295 | $(TESTFILTER) >> testoutput.txt
 	@$(TESTCMD) 4294967296 | $(TESTFILTER) >> testoutput.txt
 	@$(TESTCMD) 4294967297 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 18446744073709551615 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 18446744073709551616 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 18446744073709551617 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 79228162514264337593543950335 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 79228162514264337593543950336 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 79228162514264337593543950337 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 5192296858534827628530496329220095 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 5192296858534827628530496329220096 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 5192296858534827628530496329220097 | $(TESTFILTER) >> testoutput.txt
 	@echo Running test vectors for pppauth...
 	cmp testvectors.txt testoutput.txt
 	@echo Passed all test vectors.
