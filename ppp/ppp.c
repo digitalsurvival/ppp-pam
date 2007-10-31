@@ -40,6 +40,30 @@
 #include "ppp.h"
 
 #define KEY_BITS (int)256
+                                 
+/* IMPORTANT NOTE
+ * 
+ * If you update the PPP algorithm in any way, it's important
+ * to remain backwards compatibe with older algorithms where
+ * people may be relying on them to log into machines.
+ *
+ * Set _ppp_ver to the latest version of the algorithm this
+ * code can handle, but be sure to never break the handling
+ * of older versions in here.
+ *                           
+ * When an older keyfile is loaded, _key_ver will contain the
+ * version number of the PPP algorithm used to create it.  All
+ * processing in here should use the version specified in
+ * _key_ver.  In the event that _ppp_ver != _key_ver, it's
+ * appropriate that the application advise the user to generate
+ * a new key and print passcards using the updated algorithm.
+ */
+
+/* latest PPP algorithm version that's supported by this code */
+static int _ppp_ver = 1;
+
+/* PPP version that the keyfile was created in */
+static int _key_ver = 0;
 
 static const char * alphabet = "23456789!@#%+=:?abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPRSTUVWXYZ";
 
@@ -188,7 +212,18 @@ static void _compute_passcode_block(mp_int *cipherNum, mp_int *cipherBlock) {
 	/* get offset from sequence key (16 LSBs) */
 	mp_int offset;
 	mp_init(&offset);
-	mp_read_unsigned_bin(&offset, seqkey+32, 16);
+	switch (keyVersion()) {
+	case 1:
+		mp_read_unsigned_bin(&offset, seqkey+32, 16);
+		break;
+	case 2:
+		/* version 2 does away with the offset */
+		mp_zero(&offset);
+		break;
+	default:
+		/* unsupported */
+		break;
+	}
 	_zero_bytes(seqkey, 48);
 
 	/* compute plaintext (offset + N) mod 2^128 */
@@ -415,10 +450,27 @@ void calculateCardContainingPasscode(mp_int *passcodeNum, mp_int *cardNum) {
 
 void generateSequenceKeyFromPassphrase(char *phrase) {
 	unsigned char bytes[48];
-	sha384((const unsigned char *)phrase, strlen(phrase), bytes);
-	_reverse_bytes(bytes, 48);
-	_bytes_to_mp(bytes, &d_seqKey, 48);
-	_zero_bytes(bytes, 48);
+	
+	/* use the current ppp version */
+	setKeyVersion(pppVersion());
+	
+	switch (keyVersion()) {
+   	case 1:
+		sha384((const unsigned char *)phrase, strlen(phrase), bytes);
+		_reverse_bytes(bytes, 48);
+		_bytes_to_mp(bytes, &d_seqKey, 48);
+		_zero_bytes(bytes, 48);
+		break;
+	case 2:
+		sha256((const unsigned char *)phrase, strlen(phrase), bytes);
+		_reverse_bytes(bytes, 32);
+		_bytes_to_mp(bytes, &d_seqKey, 32);
+		_zero_bytes(bytes, 32);
+		break;
+	default:
+		/* unsupported */
+		break;
+	}
 	
 	zeroCurrPasscodeNum();
 	zeroLastCardGenerated();
@@ -440,11 +492,25 @@ void generateRandomSequenceKey() {
 		entropy[i+16] = uuid[i];
 	}
 	
-	sha384(entropy, 32, bytes);
-	_zero_bytes(entropy, 32);
-	_reverse_bytes(bytes, 48);
-	_bytes_to_mp(bytes, &d_seqKey, 48);
-	_zero_bytes(bytes, 48);
+	switch (keyVersion()) {
+   	case 1:
+		sha384(entropy, 32, bytes);
+		_zero_bytes(entropy, 32);
+		_reverse_bytes(bytes, 48);
+		_bytes_to_mp(bytes, &d_seqKey, 48);
+		_zero_bytes(bytes, 48);
+		break;
+	case 2:
+		sha256(entropy, 32, bytes);
+		_zero_bytes(entropy, 32);
+		_reverse_bytes(bytes, 32);
+		_bytes_to_mp(bytes, &d_seqKey, 32);
+		_zero_bytes(bytes, 32);
+	break;
+	default:
+		/* unsupported */
+		break;
+	}
 
 	zeroCurrPasscodeNum();
 	zeroLastCardGenerated();
@@ -526,4 +592,16 @@ void getNumPrintedCodesRemaining(mp_int *mp) {
 	
 	mp_copy(&last, mp);
 	mp_clear(&last);
+}
+
+int pppVersion() {
+	return _ppp_ver;
+}
+
+void setKeyVersion(int v) {
+	_key_ver = v;
+}
+
+int keyVersion() {
+	return _key_ver;
 }
