@@ -43,15 +43,28 @@ void printCleanup() {
 void printKey (mp_int *key) {
 	int i;
 	static unsigned char buf[48];
+	int len = 0;
+	
+	switch (keyVersion()) {
+	case 1:
+		len = 48;
+		break;
+	case 2:
+		len = 32;
+		break;
+	default: 
+		/* unsupported */
+		break;
+	}
 
-	for (i=0; i<48; i++) {
+	for (i=0; i<len; i++) {
 		buf[i] = '\x00';
 	}
-	i = 48 - mp_unsigned_bin_size(key);
+	i = len - mp_unsigned_bin_size(key);
 	mp_to_unsigned_bin(key, buf+i);
 	             
-	for (i=0; i<48; i++) {
-		printf("%2.2x", buf[48-i-1]);
+	for (i=0; i<len; i++) {
+		printf("%2.2x", buf[len-i-1]);
 	}
 }
 

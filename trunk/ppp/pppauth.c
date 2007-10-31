@@ -54,7 +54,7 @@ int main( int argc, char * argv[] )
 	if (fKey) {
 		/* generate and save new key */
 		if (fVerbose)
-			printf("Generating new random sequence key.\n");
+			printf("Generating new random key.\n");
 		generateRandomSequenceKey();
 		writeKeyFile();
 	}
@@ -62,7 +62,7 @@ int main( int argc, char * argv[] )
 	if (fPassphrase) {
 		/* generate a temporary key based on passphrase */
 		if (fVerbose)
-			printf("Generating a temporary sequence key based on passphrase.\n");
+			printf("Generating a temporary key based on passphrase.\n");
 		generateSequenceKeyFromPassphrase(getPassphrase());
 		 
 		/* TODO: Delete this.
@@ -76,7 +76,7 @@ int main( int argc, char * argv[] )
 	}                     
 	
 	if (fVerbose) {
-		printf("%s sequence key: ", (fPassphrase ? "Temporary" : "User"));
+		printf("%s key: ", (fPassphrase ? "Temporary" : "User"));
 		printKey(seqKey());
 		printf("\n");
 		mp_int mp;

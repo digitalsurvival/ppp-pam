@@ -37,6 +37,7 @@
 #include "sha2.h"
 #include "cmdline.h" 
 
+#include "ppp.h"
 #include "keyfiles.h"
 
 static char *private_key_file_name = "/private_key";
@@ -44,6 +45,7 @@ static char *private_count_file_name = "/private_cnt";
 static char *private_generated_file_name = "/private_gen";
 static char *private_key_dir = "/.pppauth";
 static char userhome[128] = "";
+
 
 static char *_home_dir() {
 	static struct passwd *pwdata = NULL;
@@ -157,7 +159,87 @@ static int _dir_exists(char *fname) {
 	}
 	return 0;
 }
+
+static int _ppp_version(char *buf) {
+	int ver = -1;
+	
+	if (buf[0] != ' ')
+		return 1;
+		
+	buf[4] = '\x00';
+	if (strncmp(buf, " PPP", 4) != 0) {
+		/* not a PPP file, so exit */
+		return -1;
+	}
+
+	buf[9] = '\x00';
+	sscanf(buf+5, "%04d", &ver);
+		
+	return ver;
+}
+
+static int _data_format(char *buf) {
+	int fmt = -1;
+	
+	if (buf[0] != ' ') {
+		/* not a versioned file */
+		return 0;
+	}
+	
+	buf[14] = '\x00';
+	sscanf(buf+10, "%04d", &fmt);
+		
+	return fmt;
+}
+
+static void _read_data(char *buf, mp_int *mp) {
+	switch (_data_format(buf)) {
+		case 0:
+			/* unversioned file, mpi radix 64 format */
+			mp_read_radix(mp, (unsigned char *)buf, 64);
+			break;
+		case 1:
+			/* versioned file, mpi radix 64 format */
+			mp_read_radix(mp, (unsigned char *)(buf+15), 64);
+			break;
+	}
+	
+}
       
+static void _write_data(mp_int *mp, FILE *fp) {
+	char buf[128];
+	/* write ppp identifer */
+	fwrite(" PPP ", 1, 5, fp);
+
+	/* write ppp version */
+	fprintf(fp, "%04d", pppVersion());
+	fwrite(" ", 1, 1, fp);
+	
+	/* Current data format is versioned file, 
+	 * mpi radix 64. 
+	 */
+	int current_data_format = 1;
+	
+	fprintf(fp, "%04d", current_data_format);
+	fwrite(" ", 1, 1, fp);
+
+	/* IMPORTANT NOTE:
+	 *
+	 * If you change current_data_format above, 
+	 * make sure you:
+	 * 
+	 * 1. Update the code below that writes the data to
+	 *    reflect the data format you specified in
+	 *    current_data_format above.
+	 * 2. Add compatible read code to the switch statement
+	 * in _read_data() above.
+	 */
+	              
+	/* mpi radix 64 is the data format du jour */
+	mp_toradix(mp, (unsigned char *)buf, 64);
+	fwrite(buf, 1, strlen(buf)+1, fp);
+}
+
 static int confirm(char *prompt) {
 	char buf[1024], *p;
 	
@@ -206,6 +288,7 @@ int readKeyFile() {
 	FILE *fp;
 	char buf[128];
 	mp_int num;
+	int ver[3];
 	
 	mp_init(&num);
 	
@@ -223,7 +306,8 @@ int readKeyFile() {
 		return 0;
 	fread(buf, 1, 128, fp);
 	fclose(fp);
-	mp_read_radix(&num, (unsigned char *)buf, 64);
+	ver[0] = _ppp_version(buf);
+	_read_data(buf, &num);
 	setSeqKey(&num);
 
 	fp = fopen(_cnt_file_name(), "r");
@@ -231,19 +315,29 @@ int readKeyFile() {
 		return 0;
 	fread(buf, 1, 128, fp);
 	fclose(fp);
-	mp_read_radix(&num, (unsigned char *)buf, 64);
+	ver[1] = _ppp_version(buf);
+	_read_data(buf, &num);
 	setCurrPasscodeNum(&num);
 
 	fp = fopen(_gen_file_name(), "r");
 	if ( ! fp) 
 		return 0;
 	fread(buf, 1, 128, fp);
+	ver[2] = _ppp_version(buf);
 	fclose(fp);
-	mp_read_radix(&num, (unsigned char *)buf, 64);
+	_read_data(buf, &num);
 	setLastCardGenerated(&num);
 
 	memset(buf, 0, 128);
 	mp_clear(&num);
+	
+	if ( (ver[0] != ver[1]) || (ver[1] != ver[2]) ) {
+		/* Inconsistency in PPP version among the three data files */
+		return 0;
+	}
+
+	/* tell PPP code which version the key expects */
+	setKeyVersion(ver[0]);
 
 	return 1;
 }
@@ -258,12 +352,10 @@ int writeState() {
 	fp[0] = fopen(_cnt_file_name(), "w");
 	fp[1] = fopen(_gen_file_name(), "w");
 	if (fp[0] && fp[1]) {
-		mp_toradix(currPasscodeNum(), (unsigned char *)buf, 64);
-		fwrite(buf, 1, strlen(buf)+1, fp[0]);
+		_write_data(currPasscodeNum(), fp[0]);
 		fclose(fp[0]);
 
-		mp_toradix(lastCardGenerated(), (unsigned char *)buf, 64);
-		fwrite(buf, 1, strlen(buf)+1, fp[1]);
+		_write_data(lastCardGenerated(), fp[1]);
 		fclose(fp[1]);
                      
 		memset(buf, 0, 128);
@@ -313,16 +405,13 @@ int writeKeyFile() {
 		fp[1] = fopen(_cnt_file_name(), "w");
 		fp[2] = fopen(_gen_file_name(), "w");
 		if (fp[0] && fp[1] && fp[2]) {
-			mp_toradix(seqKey(), (unsigned char *)buf, 64);
-			fwrite(buf, 1, strlen(buf)+1, fp[0]);
+			_write_data(seqKey(), fp[0]);
 			fclose(fp[0]);
 
-			mp_toradix(currPasscodeNum(), (unsigned char *)buf, 64);
-			fwrite(buf, 1, strlen(buf)+1, fp[1]);
+			_write_data(currPasscodeNum(), fp[1]);
 			fclose(fp[1]);
 
-			mp_toradix(lastCardGenerated(), (unsigned char *)buf, 64);
-			fwrite(buf, 1, strlen(buf)+1, fp[2]);
+			_write_data(lastCardGenerated(), fp[2]);
 			fclose(fp[2]);
 			
 			memset(buf, 0, 128);
