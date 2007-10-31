@@ -36,4 +36,4 @@ http://www.grc.com/image/pppcodemapping.png
  * Time Synchronization - The Server and Key Calculator must be synchronized in time relatively tightly for the authentication to work.  Some method of tracking the time skew between the two and compensating for it can be used.  _N.B. Be careful of patent infringements here._
 
 = Potential Pitfalls =
- * Patent Infringement - RSA's SecurID Patents: [http://www.google.com/patents?id=ZrozAAAAEBAJ 4,720,860], [http://www.google.com/patents?id=8gE-AAAAEBAJ 4,885,778], [http://www.google.com/patents?id=g7YzAAAAEBAJ 4,856,062].
+ * Patent Infringement - A quick search turned up these RSA SecurID Patents: [http://www.google.com/patents?id=ZrozAAAAEBAJ 4,720,860], [http://www.google.com/patents?id=8gE-AAAAEBAJ 4,885,778], [http://www.google.com/patents?id=g7YzAAAAEBAJ 4,856,062].  I have not reviewed them yet, however.
