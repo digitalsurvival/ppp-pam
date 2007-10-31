@@ -36,7 +36,7 @@ pam_ppp_so_LDFLAGS = -bundle -Ddarwin -lc -lpam $(UUID_LIBS)
 pam_ppp_so_CFLAGS = $(MYCFLAGS) -Ddarwin -no-cpp-precomp -DPAM_DYNAMIC
 else	
 pam_ppp_so_LDFLAGS = -shared -lc -lpam $(UUID_LIBS)
-pam_ppp_so_CFLAGS = $(MYCFLAGS) -DPAM_DYNAMIC
+pam_ppp_so_CFLAGS = $(MYCFLAGS) -DPAM_DYNAMIC -fPIC
 endif
 
 TESTCMD = ./pppauth --passphrase testvectors --text --name testvectors --card
