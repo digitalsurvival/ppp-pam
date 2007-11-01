@@ -35,5 +35,15 @@ http://www.grc.com/image/pppcodemapping.png
 = Areas of Further Investigation =
  * Time Synchronization - The Server and Key Calculator must be synchronized in time relatively tightly for the authentication to work.  Some method of tracking the time skew between the two and compensating for it can be used.  _N.B. Be careful of patent infringements here._
 
+http://ppp-pam.googlecode.com/svn/images/spacer2.png
+http://ppp-pam.googlecode.com/svn/images/timeskew.png
+
+ * The plot above shows a simplistic test to see how much skew we might expect between devices.
+  * The data represents difference between a client and server clock at various points throughout the day.
+  * Unfortunately, a poor server was chosen for this test.  It's clock is slow by about 10 minutes!  And, you can see from the slope of all the hosts that the server is continuing to lose time.
+  * Interestingly, host1 is an iPhone.  I suspect the 20-30s swings are delays in enabling the networking to send the time to the server.  I implemented a fix for this.  We'll see if this improves the data.
+  * Host5 is a windows machine running cygwin.
+  * I'll continue to collect more long-term drift data.
+
 = Potential Pitfalls =
  * Patent Infringement - A quick search turned up these RSA SecurID Patents: [http://www.google.com/patents?id=ZrozAAAAEBAJ 4,720,860], [http://www.google.com/patents?id=8gE-AAAAEBAJ 4,885,778], [http://www.google.com/patents?id=g7YzAAAAEBAJ 4,856,062].  I have not reviewed them yet, however.
