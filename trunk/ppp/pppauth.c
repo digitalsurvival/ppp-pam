@@ -42,20 +42,30 @@ int main( int argc, char * argv[] )
 	pppInit();
 	clInit(argv[0]);
 	printInit();
+
+	/* get user's sequence key */
+	readKeyFile();
 	
 	processCommandLine(argc, argv);
 
 	if (fVerbose)
 		printf("Verbose output enabled.\n");
-	
-	/* get user's sequence key */
-	readKeyFile();
+
+	if (fVerbose) {
+		if (pppVersion() == 2) {
+			printf("EXPERIMENTAL UNTESTED PPP VERSION BEING USED\n");
+		}
+		printf("PPP Version in use: %d\n", pppVersion());
+	}
 	
 	if (fKey) {
 		/* generate and save new key */
 		if (fVerbose)
 			printf("Generating new random key.\n");
 		generateRandomSequenceKey();
+		if (fTime) {
+			pppSetFlags(PPP_TIME_BASED);
+		}
 		writeKeyFile();
 	}
 	
@@ -79,11 +89,13 @@ int main( int argc, char * argv[] )
 		printf("%s key: ", (fPassphrase ? "Temporary" : "User"));
 		printKey(seqKey());
 		printf("\n");
-		mp_int mp;
-		mp_init(&mp);
-		mp_add_d(lastCardGenerated(), 1, &mp);
-		printf("Last passcard printed: %s\n", mpToDecimalString(&mp, ','));
-		mp_clear(&mp);
+		if (!fPassphrase) {
+			mp_int mp;
+			mp_init(&mp);
+			mp_add_d(lastCardGenerated(), 1, &mp);
+			printf("Last passcard printed: %s\n", mpToDecimalString(&mp, ','));
+			mp_clear(&mp);
+		}
 	}
 	    
 	mp_int n;
@@ -136,17 +148,17 @@ int main( int argc, char * argv[] )
 		if (fPasscode) {
 			calculatePasscodeNumberFromCardColRow(&cardNum, colNum, rowNum, &n);
 		}
-		if (fVerbose) {
-			mp_int mp;
-			mp_init(&mp);
-			mp_add_d(&cardNum, 1, &mp);
-			printf("Passcard number %s\n", mpToDecimalString(&mp, ','));
-			printf("Column %c\n", colNum + 'A');
-			printf("Row %d\n", rowNum+1);
-			mp_add_d(&n, 1, &mp);
-			printf("Passcode number %s\n", mpToDecimalString(&mp, ','));
-			mp_clear(&mp);
-		}
+		// if (fVerbose) {
+		// 	mp_int mp;
+		// 	mp_init(&mp);
+		// 	mp_add_d(&cardNum, 1, &mp);
+		// 	printf("Passcard number %s\n", mpToDecimalString(&mp, ','));
+		// 	printf("Column %c\n", colNum + 'A');
+		// 	printf("Row %d\n", rowNum+1);
+		// 	mp_add_d(&n, 1, &mp);
+		// 	printf("Passcode number %s\n", mpToDecimalString(&mp, ','));
+		// 	mp_clear(&mp);
+		// }
 	} 
 	
 	if ( ! fPasscode && fVerbose) {
@@ -190,6 +202,9 @@ int main( int argc, char * argv[] )
 		httpServe();
 	}
 	
+	if (fTime && !fKey) {
+		printf("%s\n", getPasscode(NULL));
+	}	
 	             
 	/* cleanup , zero memory, etc */
 	mp_clear(&n);

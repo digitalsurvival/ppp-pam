@@ -35,6 +35,10 @@
 
 #include "print.h"
 #include "keyfiles.h"
+             
+#define PPP_FLAGS_PRESENT			0x0001
+#define PPP_DONT_SKIP_ON_FAILURES	0x0002
+#define PPP_TIME_BASED				0x0004
     
 void pppInit();
 void pppCleanup();
@@ -62,5 +66,8 @@ void getNumPrintedCodesRemaining(mp_int *mp);
 int pppVersion();
 void setKeyVersion(int v);
 int keyVersion();
+void pppSetFlags(unsigned int mask);
+void pppClearFlags(unsigned int mask);
+unsigned int pppCheckFlags(unsigned int mask);
 
 #endif
