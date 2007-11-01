@@ -36,12 +36,14 @@
 #include "keyfiles.h"
 
 int fKey = 0;
+int fTime = 0;
 int fSkip = 0;
 int fHtml = 0;
 int fText = 0;
 int fNext = 0;
 int fName = 0;
 int fCard = 0;
+int fDontSkipFailures = 0;
 int fPassphrase = 0;
 int fPasscode = 0;
 int fVerbose = 0;
@@ -100,6 +102,7 @@ void usage() {
 		"Usage: %s [options]\n"
 		"Options:\n"
 		"  -k, --key          Generate a new sequence key and save in ~/.pppauth.\n"
+		// "  --time             Specify the use of time-varying passcodes.\n"
 		"  -s, --skip         Skip to --passcode or to --card specified.\n"
 		"  -h, --html         Generate html passcards for printing.\n"
 		"  -t, --text         Generate text passcards for printing.\n"
@@ -116,6 +119,8 @@ void usage() {
 		"                     Use the specified <phrase> to create a temporary key for\n"
 		"                     testing purposes only.  This temporary key is not saved\n"
 		"                     and will only be used until the program exits.\n"
+		"  --dontSkip         Used with --key to specify that on authentication, system\n"
+		"                     will not advance to the next passcode on a failed attempt."
 		"  -v, --verbose      Display more information about what is happening.\n"
 		, progname()
 	);
@@ -156,6 +161,7 @@ int validCardNum(char *str, int length) {
 		return 0;
 	}
 	mp_sub_d(&cardNum, 1, &cardNum); /* make zero-based */
+    
 	return 1;
 }
 
@@ -213,6 +219,7 @@ void processCommandLine( int argc, char * argv[] )
 	
 	static struct option long_options[] = { 
 		{"key",			no_argument,		0, 'k'},
+		{"time",		no_argument,		&fTime, 1},
 		{"skip",   		no_argument,		0, 's'},
 		{"html",		no_argument,		0, 'h'},
 		{"text",		no_argument,		0, 't'},
@@ -221,6 +228,8 @@ void processCommandLine( int argc, char * argv[] )
 		{"card",		required_argument,	0, 'c'},
 		{"passphrase",	required_argument,	&fPassphrase, 1},
 		{"passcode",	required_argument,	0, 'p'},
+		{"dontskip",	no_argument,		&fDontSkipFailures, 1},
+		{"dontSkip",	no_argument,		&fDontSkipFailures, 1},
 		{"verbose",		no_argument, 		0, 'v'},
 		{0, 0, 0, 0}
 	};
@@ -317,10 +326,35 @@ void processCommandLine( int argc, char * argv[] )
 		errorExitWithUsage("unrecognized options on command line");
 	}
    
+	/* process ppp flags */
+    
+	if (pppCheckFlags(PPP_TIME_BASED) && !(fKey || fPassphrase) ) {
+		fTime = 1;
+	}
 	
-	/* validate the command line options */
+	if (fTime) {
+		pppSetFlags(PPP_TIME_BASED);
+	} else {
+		pppClearFlags(PPP_TIME_BASED);
+	}
 	
-	if ( ! (fKey | fSkip | fHtml | fText) ) {
+	if (fDontSkipFailures) {
+		pppSetFlags(PPP_DONT_SKIP_ON_FAILURES);
+	} else {
+		pppClearFlags(PPP_DONT_SKIP_ON_FAILURES);
+	}
+	
+	/* Disable time-based authentication for now
+	 * since it's still experimental and has not yet
+	 * been fully implemented.  Comment out the following
+	 * two lines to enable it.
+	 */
+	pppClearFlags(PPP_TIME_BASED);
+	fTime = 0;
+	
+    /* validate the command line options */
+
+    if ( ! (fKey | fSkip | fHtml | fText | fTime) ) {
 		errorExitWithUsage("nothing to do!");
 	}
 
@@ -364,6 +398,14 @@ void processCommandLine( int argc, char * argv[] )
 	
 	if (fHtml && fPasscode) {
 		errorExit("cannot specify `--passcode' with `--html'");
+	}
+	          
+	/* Time-Based Authentication **Experimental** */
+	if (fTime && (fHtml || fText)) {
+		errorExit("Cannot print passcards.  Key is for time-based authentication.");
+	}
+	if (fTime && fSkip) {
+		errorExit("Cannot skip.  Key is for time-based authentication.");
 	}
 	
 }

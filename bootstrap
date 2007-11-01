@@ -6,7 +6,7 @@ case $1 in
 	rm -f missing mkinstalldirs config.main config.sub config.guess
 	rm -f libtool config.log .configstatus ltmain.sh build/* Makefile
 	rm -f autom4te.cache/*
-	rm -rf .deps
+	rm -rf .deps build/.deps build/.libs
 	echo Done with clean ;;
   prep)
 	./bootstrap clean

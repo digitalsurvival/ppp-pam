@@ -192,7 +192,35 @@ static int _data_format(char *buf) {
 	return fmt;
 }
 
-static void _read_data(char *buf, mp_int *mp) {
+static int _ppp_flags(char *buf) {
+	int flags = 0;
+	
+	if (buf[0] != ' ') {
+		/* not a versioned file */
+		pppClearFlags(0xffff);
+		return 0;
+	}
+		
+	if (strlen(buf+15) < 5) {
+		/* is not long enough to check for flags */
+		pppClearFlags(0xffff);
+		return 0;
+	}
+	
+	if (buf[19] != ' ') {
+		/* file does not contain flags */
+		pppClearFlags(0xffff);
+		return 0;
+	}
+		
+	buf[19] = '\x00';
+	sscanf(buf+15, "%04x", &flags);
+	pppSetFlags(PPP_FLAGS_PRESENT);
+	
+	return flags;
+}
+
+static void _read_data(char *buf, mp_int *mp) {	
 	switch (_data_format(buf)) {
 		case 0:
 			/* unversioned file, mpi radix 64 format */
@@ -200,7 +228,10 @@ static void _read_data(char *buf, mp_int *mp) {
 			break;
 		case 1:
 			/* versioned file, mpi radix 64 format */
-			mp_read_radix(mp, (unsigned char *)(buf+15), 64);
+			if (pppCheckFlags(PPP_FLAGS_PRESENT)) 
+				mp_read_radix(mp, (unsigned char *)(buf+20), 64);
+			else
+				mp_read_radix(mp, (unsigned char *)(buf+15), 64);
 			break;
 	}
 	
@@ -219,8 +250,13 @@ static void _write_data(mp_int *mp, FILE *fp) {
 	 * mpi radix 64. 
 	 */
 	int current_data_format = 1;
-	
+
+	/* write data format */
 	fprintf(fp, "%04d", current_data_format);
+	fwrite(" ", 1, 1, fp); 
+	
+	/* write flags */
+	fprintf(fp, "%04x", pppCheckFlags(0xffff));
 	fwrite(" ", 1, 1, fp);
 
 	/* IMPORTANT NOTE:
@@ -307,6 +343,7 @@ int readKeyFile() {
 	fread(buf, 1, 128, fp);
 	fclose(fp);
 	ver[0] = _ppp_version(buf);
+	pppSetFlags(_ppp_flags(buf)); /* load flags */
 	_read_data(buf, &num);
 	setSeqKey(&num);
 
@@ -348,6 +385,16 @@ int writeState() {
 
 	if ( ! _dir_exists(_key_file_dir()) )
 		return 0;
+		
+	if ( ! pppCheckFlags(PPP_FLAGS_PRESENT)) {
+		/* Update the key file to include flags */
+		pppSetFlags(PPP_FLAGS_PRESENT);
+		fp[0] = fopen(_key_file_name(), "w");
+		if (fp[0]) {
+			_write_data(seqKey(), fp[0]);
+			fclose(fp[0]);
+		}
+	}
 		
 	fp[0] = fopen(_cnt_file_name(), "w");
 	fp[1] = fopen(_gen_file_name(), "w");

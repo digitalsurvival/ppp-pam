@@ -32,12 +32,14 @@
 #include "mpi.h"
 
 extern int fKey;
+extern int fTime;
 extern int fSkip;
 extern int fHtml;
 extern int fText;
 extern int fNext;
 extern int fName;
 extern int fCard;
+extern int fDontSkipFailures;
 extern int fRow;
 extern int fCol;
 extern int fPassphrase;

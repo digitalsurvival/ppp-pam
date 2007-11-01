@@ -65,6 +65,9 @@ static int _ppp_ver = 1;
 /* PPP version that the keyfile was created in */
 static int _key_ver = 0;
 
+/* Flags that permit customizing the implementation */
+static unsigned int _ppp_flags = 0;
+
 static const char * alphabet = "23456789!@#%+=:?abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPRSTUVWXYZ";
 
 static unsigned long rk[RKLENGTH(KEY_BITS)];
@@ -200,10 +203,15 @@ static void _compute_passcode_block(mp_int *cipherNum, mp_int *cipherBlock) {
 	unsigned char seqkey[48];
 	_mp_to_bytes(&d_seqKey, seqkey, 48);
 	
+	unsigned char *kp = seqkey;
+	if (keyVersion() == 2) {
+		kp += 16;
+	}
+
 	/* get encryption key from sequence key (32 MSBs) */
     mp_int key;
 	mp_init(&key);
-	mp_read_unsigned_bin(&key, seqkey, 32);
+	mp_read_unsigned_bin(&key, kp, 32);
 
 	/* prepare for encryption */
 	_setup_encrypt(&key);
@@ -385,11 +393,17 @@ char *currPrompt() {
 
 int pppAuthenticate(char *attempt) {
 	int rv = 0;
-	if (strcmp(getPasscode(currPasscodeNum()), attempt) == 0)
+	if (strcmp(getPasscode(currPasscodeNum()), attempt) == 0) {
 		rv = 1;
-		
-	incrCurrPasscodeNum();
-	writeState();
+		incrCurrPasscodeNum();
+		writeState();
+	} else {
+		if ( ! pppCheckFlags(PPP_DONT_SKIP_ON_FAILURES)) {
+			incrCurrPasscodeNum();
+			writeState();
+		}
+	}
+	
 	_zero_bytes((unsigned char *)d_passcode, 5);
 	
 	return rv;
@@ -472,6 +486,7 @@ void generateSequenceKeyFromPassphrase(char *phrase) {
 		break;
 	}
 	
+	pppSetFlags(PPP_FLAGS_PRESENT);
 	zeroCurrPasscodeNum();
 	zeroLastCardGenerated();
 }
@@ -512,6 +527,7 @@ void generateRandomSequenceKey() {
 		break;
 	}
 
+	pppSetFlags(PPP_FLAGS_PRESENT);
 	zeroCurrPasscodeNum();
 	zeroLastCardGenerated();
 }
@@ -521,9 +537,21 @@ char *getPasscode(mp_int *n) {
 	mp_int cipherNum, offset;
 	mp_init(&cipherNum);
 	mp_init(&offset);
-	
-	_locate_passcode(n, &cipherNum, &offset);
-	           
+
+	mp_int N;
+	mp_init(&N);
+
+	if (pppCheckFlags(PPP_TIME_BASED)) {
+		/* Experimental time-based passcodes */
+		mp_set_int(&N, time(NULL));
+		mp_div_2d(&N, 5, &N, NULL);  // divide by 32 or right shift 5 bits
+	} else {
+		mp_copy(n, &N);
+	}
+
+	_locate_passcode(&N, &cipherNum, &offset);
+	mp_clear(&N);
+           
 	/* Get ciphertext block (cipher N, N+1, N+2) 
 	 */
 	mp_int cipherBlock;
@@ -604,4 +632,16 @@ void setKeyVersion(int v) {
 
 int keyVersion() {
 	return _key_ver;
+}
+
+void pppSetFlags(unsigned int mask) {
+	_ppp_flags |= mask;
+}
+
+void pppClearFlags(unsigned int mask) {
+	_ppp_flags &= ~mask;
+}
+
+unsigned int pppCheckFlags(unsigned int mask) {
+	return _ppp_flags & mask;
 }
