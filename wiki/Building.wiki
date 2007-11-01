@@ -90,3 +90,14 @@ pppauth --text --next 1
 {{{
 ssh localhost
 }}}
+
+== Instructions for Specific Linux Distributions ==
+
+==== SuSe 64-bit Linux ====
+You may need to install the following packages:
+ * pam-devel-0.99.8.1-15.i586.rpm
+ * libuuid-devel-1.40.2-20.i586.rpm
+Also, {{{pam_ppp.so}}} must go in {{{/lib64/security}}}.  At the moment, {{{sudo make install}}} attepts to put it in {{{lib/security}}} so you will need to copy it manually:
+{{{
+sudo cp pam_ppp.so /lib64/security/pam_ppp.so
+}}}
