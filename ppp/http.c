@@ -275,7 +275,14 @@ void httpServe() {
 	sprintf(url, "http://localhost:%d", ntohs(sin.sin_port));
 	
 	if ( ! fork()) {
+#ifdef OS_IS_MACOSX
 		execlp("/usr/bin/open", "/usr/bin/open", url, NULL);
+#else
+		printf("\nPlease launch a browser on this machine and go to the URL:\n");
+		printf("   %s\n", url);
+		printf("To get your passcards for printing.\n\n");
+		printf("Waiting for browser to access URL...\n");
+#endif		
 	}
 		
 	int waiting = 1;

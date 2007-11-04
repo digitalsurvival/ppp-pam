@@ -390,12 +390,12 @@ void processCommandLine( int argc, char * argv[] )
 		}
 	}
 	
-	if (fPassphrase && fNext) {
-		errorExitWithUsage("Cannot use `--next' with `--passphrase'");
+	if (fPassphrase && fNext && !fCard) {
+		errorExitWithUsage("Cannot use `--next' with `--passphrase' unless `--card' is also used");
 	}
-
-	if (fNext && fCard) {
-		errorExitWithUsage("Cannot use `--next' with `--card'");
+	
+	if (fNext && fCard && !fPassphrase) {
+		errorExitWithUsage("Cannot use `--next' with `--card' except with `--passphrase'");
 	}
 	
 	if (fHtml && fPasscode) {
