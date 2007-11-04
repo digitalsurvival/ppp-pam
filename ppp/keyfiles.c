@@ -229,17 +229,29 @@ static void _read_data(char *buf, mp_int *mp) {
 			break;
 		case 1:
 			/* versioned file, mpi radix 64 format */
-			if (pppCheckFlags(PPP_FLAGS_PRESENT)) 
-				mp_read_radix(mp, (unsigned char *)(buf+20), 64);
+			/* Note:  This version should not be used.  The MPI
+			 *        library has a bug when using radix 64
+			 *        where it writes 63 as + and then assumes
+			 *        the plus is a sign indicator on read.
+			 */
+			if (pppCheckFlags(PPP_FLAGS_PRESENT))
+				mp_read_radix(mp, (unsigned char *)(buf+20), 64)
 			else
 				mp_read_radix(mp, (unsigned char *)(buf+15), 64);
+			break;
+		case 2:
+			/* versioned file, mpi radix 62 format */
+			if (pppCheckFlags(PPP_FLAGS_PRESENT))
+				mp_read_radix(mp, (unsigned char *)(buf+20), 62);
+			else
+				mp_read_radix(mp, (unsigned char *)(buf+15), 62);
 			break;
 	}
 	
 }
       
 static void _write_data(mp_int *mp, FILE *fp) {
-	char buf[128];
+	char buf[256];
 	/* write ppp identifer */
 	fwrite(" PPP ", 1, 5, fp);
 
@@ -248,9 +260,9 @@ static void _write_data(mp_int *mp, FILE *fp) {
 	fwrite(" ", 1, 1, fp);
 	
 	/* Current data format is versioned file, 
-	 * mpi radix 64. 
+	 * mpi radix 62. 
 	 */
-	int current_data_format = 1;
+	int current_data_format = 2;
 
 	/* write data format */
 	fprintf(fp, "%04d", current_data_format);
@@ -272,8 +284,8 @@ static void _write_data(mp_int *mp, FILE *fp) {
 	 * in _read_data() above.
 	 */
 	              
-	/* mpi radix 64 is the data format du jour */
-	mp_toradix(mp, (unsigned char *)buf, 64);
+	/* mpi radix 62 is the data format du jour */
+	mp_toradix(mp, (unsigned char *)buf, 62);
 	fwrite(buf, 1, strlen(buf)+1, fp);
 }
 
