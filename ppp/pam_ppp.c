@@ -30,6 +30,8 @@
 
 #include <stdio.h>
 
+#include "ppp.h"
+
 /*
  * here, we make definitions for the externally accessible functions
  * in this file (these definitions are required for static modules
@@ -50,8 +52,6 @@
 	#include <pam/pam_mod_misc.h>
 	#include <pam/_pam_macros.h>
 #endif	
-
-#include "ppp.h"
 
 /* --- authentication management functions --- */
 

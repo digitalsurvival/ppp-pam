@@ -28,12 +28,13 @@
 
 #include <stdio.h>
 
+#include "ppp.h"
+
 #include "cmdline.h"
 #include "keyfiles.h"
 
 #include "mpi.h"
 #include "sha2.h"
-#include "ppp.h"
 #include "print.h"
 #include "http.h"
 

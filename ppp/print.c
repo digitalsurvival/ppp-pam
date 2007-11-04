@@ -31,6 +31,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "ppp.h"
+
 #include "print.h"
 #include "cmdline.h"
 

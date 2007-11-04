@@ -36,6 +36,8 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
+#include "ppp.h"
+
 #include "http.h"
 
 #define SERVER "webserver/1.0"

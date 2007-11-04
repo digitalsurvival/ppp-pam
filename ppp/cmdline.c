@@ -32,6 +32,8 @@
 #include <getopt.h>
 #include <unistd.h>
 
+#include "ppp.h"
+
 #include "cmdline.h"
 #include "keyfiles.h"
 
