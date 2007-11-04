@@ -117,6 +117,61 @@ int pam_sm_setcred(pam_handle_t *pamh,int flags,int argc,const char **argv) {
      return PAM_IGNORE;
 }
 
+
+/* --- session management functions --- */
+
+PAM_EXTERN
+int pam_sm_close_session(pam_handle_t *pamh, int flags, int argc, const char **argv) {
+	return PAM_IGNORE;
+}
+
+PAM_EXTERN
+int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, const char **argv) {
+	int retval = PAM_IGNORE;
+	const char *user;
+
+	struct pam_conv *conversation;
+	struct pam_message message;
+	struct pam_message *pmessage = &message;
+	struct pam_response *resp = NULL;
+
+	if (flags & PAM_SILENT) {
+		return retval;
+	}
+
+	if(pam_get_user(pamh, &user, NULL) != PAM_SUCCESS || user == NULL || *user == '\0') {
+		return PAM_USER_UNKNOWN;
+	}
+
+	message.msg_style = PAM_TEXT_INFO;
+	
+	pppInit();
+	setUser((char *)user);
+	if ( ! readKeyFile()) {
+		user = NULL;
+		/* TODO return a more appropriate error here */
+		return PAM_USER_UNKNOWN;
+	}
+	
+	char buffer[2048];
+	while (pppWarning(buffer, 2048)) {
+		if (strlen(buffer)) {
+			message.msg = buffer;
+	
+			/* Use conversation function to give user contents of umotd */
+			pam_get_item(pamh, PAM_CONV, (const void **)&conversation);
+			conversation->conv(1, (const struct pam_message **)&pmessage,
+					&resp, conversation->appdata_ptr);
+			if (resp)
+				_pam_drop_reply(resp, 1);
+		}
+	}
+
+	pppCleanup();
+
+	return retval;
+}
+
 /* end of module definition */
 
 #ifdef PAM_STATIC
@@ -128,8 +183,8 @@ struct pam_module _pam_permit_modstruct = {
     pam_sm_authenticate,
     pam_sm_setcred,
     NULL,
-    NULL,
-    NULL,
+    pam_sm_open_session,
+    pam_sm_close_session,
     NULL
 };
 

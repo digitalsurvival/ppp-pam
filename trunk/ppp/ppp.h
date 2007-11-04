@@ -51,6 +51,7 @@ char * mpToDecimalString(mp_int *mp, char groupChar);
 char *currCode();
 char *currPrompt();
 int pppAuthenticate(char *attempt);
+int pppWarning(char *buf, int size);
 mp_int *seqKey();
 void setSeqKey(mp_int *mp);
 mp_int *currPasscodeNum();

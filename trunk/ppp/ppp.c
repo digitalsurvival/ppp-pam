@@ -409,6 +409,60 @@ int pppAuthenticate(char *attempt) {
 	return rv;
 }
 
+int pppWarning(char *buf, int size) {
+	static int warnNum = 0;
+	mp_int mp;
+	mp_init(&mp);
+	
+	buf[0] = '\x00';
+	
+	switch (warnNum) {
+	case 0:
+		getNumPrintedCodesRemaining(&mp);
+		if (mp_cmp_d(&mp, 70) <= 0 && mp_cmp_d(&mp, 14) > 0) {
+			snprintf(buf, size, "\n"
+				"===========================================================\n"
+				"  You are on your last printed passcard. Please print\n"
+				"  more so you can continue to log into your account.\n"
+				"===========================================================\n"
+			);
+		}
+		break;
+	case 1:
+		getNumPrintedCodesRemaining(&mp);
+		if (mp_cmp_d(&mp, 14) <= 0 && mp_cmp_d(&mp, 0) > 0) {
+			snprintf(buf, size, "\n"
+				"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n"
+				"  You have %s printed passcode%s remaining. Please print\n"
+				"  more passcodes IMMEDIATELY so you can continue to log\n"
+				"  into your account.\n"
+				"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n",
+				mpToDecimalString(&mp, NULL), (mp_cmp_d(&mp, 1) ? "s":"")
+			);
+		}
+		break;
+	case 2:
+		getNumPrintedCodesRemaining(&mp);
+		if (mp_cmp_d(&mp, 0) <= 0) {
+			snprintf(buf, size, "\n"
+				"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n"
+				"            WARNING:  YOU ARE OUT OF PASSCODES             \n"
+				"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n"
+				"  YOU MUST IMMEDIATELY PRINT MORE PASSCARDS if you wish to \n"
+				"  log in again.\n"
+				"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n"
+			);
+		}
+		break;
+	default:
+		warnNum = -1;
+		break;
+	}
+	
+	mp_clear(&mp);
+	return ++warnNum;
+}
+
 mp_int *seqKey() {
 	return &d_seqKey;
 }
