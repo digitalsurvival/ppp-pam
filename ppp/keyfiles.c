@@ -235,7 +235,7 @@ static void _read_data(char *buf, mp_int *mp) {
 			 *        the plus is a sign indicator on read.
 			 */
 			if (pppCheckFlags(PPP_FLAGS_PRESENT))
-				mp_read_radix(mp, (unsigned char *)(buf+20), 64)
+				mp_read_radix(mp, (unsigned char *)(buf+20), 64);
 			else
 				mp_read_radix(mp, (unsigned char *)(buf+15), 64);
 			break;
