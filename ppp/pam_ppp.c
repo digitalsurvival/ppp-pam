@@ -87,7 +87,11 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
     struct pam_message message;
     struct pam_message *pmessage = &message;
     struct pam_response *resp = NULL;
-    message.msg_style = PAM_PROMPT_ECHO_OFF;
+	if (pppCheckFlags(PPP_SHOW_PASSCODE)) {
+	    message.msg_style = PAM_PROMPT_ECHO_ON;
+	} else {
+    	message.msg_style = PAM_PROMPT_ECHO_OFF;
+	}
 	message.msg = currPrompt();
 	
 	/* Use conversation function to prompt user for passcode */

@@ -46,6 +46,7 @@ int fNext = 0;
 int fName = 0;
 int fCard = 0;
 int fDontSkipFailures = 0;
+int fShowPasscode = 0;
 int fPassphrase = 0;
 int fPasscode = 0;
 int fVerbose = 0;
@@ -123,6 +124,8 @@ void usage() {
 		"                     and will only be used until the program exits.\n"
 		"  --dontSkip         Used with --key to specify that on authentication, system\n"
 		"                     will not advance to the next passcode on a failed attempt.\n"
+		"  --showPasscode     Used with --key to specify that on authentication, system\n"
+		"                     will display passcode as it is typed.\n"
 		"  -v, --verbose      Display more information about what is happening.\n"
 		, progname()
 	);
@@ -232,6 +235,8 @@ void processCommandLine( int argc, char * argv[] )
 		{"passcode",	required_argument,	0, 'p'},
 		{"dontskip",	no_argument,		&fDontSkipFailures, 1},
 		{"dontSkip",	no_argument,		&fDontSkipFailures, 1},
+		{"showpasscode",no_argument,		&fShowPasscode, 1},
+		{"showPasscode",no_argument,		&fShowPasscode, 1},
 		{"verbose",		no_argument, 		0, 'v'},
 		{0, 0, 0, 0}
 	};
@@ -344,6 +349,12 @@ void processCommandLine( int argc, char * argv[] )
 		pppSetFlags(PPP_DONT_SKIP_ON_FAILURES);
 	} else {
 		pppClearFlags(PPP_DONT_SKIP_ON_FAILURES);
+	}
+
+	if (fShowPasscode) {
+		pppSetFlags(PPP_SHOW_PASSCODE);
+	} else {
+		pppClearFlags(PPP_SHOW_PASSCODE);
 	}
 	
 	/* Disable time-based authentication for now

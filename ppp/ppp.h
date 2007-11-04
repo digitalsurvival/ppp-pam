@@ -43,6 +43,7 @@
 #define PPP_FLAGS_PRESENT			0x0001
 #define PPP_DONT_SKIP_ON_FAILURES	0x0002
 #define PPP_TIME_BASED				0x0004
+#define PPP_SHOW_PASSCODE			0x0008
     
 void pppInit();
 void pppCleanup();
