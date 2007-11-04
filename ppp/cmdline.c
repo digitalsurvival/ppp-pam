@@ -122,7 +122,7 @@ void usage() {
 		"                     testing purposes only.  This temporary key is not saved\n"
 		"                     and will only be used until the program exits.\n"
 		"  --dontSkip         Used with --key to specify that on authentication, system\n"
-		"                     will not advance to the next passcode on a failed attempt."
+		"                     will not advance to the next passcode on a failed attempt.\n"
 		"  -v, --verbose      Display more information about what is happening.\n"
 		, progname()
 	);
