@@ -387,7 +387,7 @@ void processCommandLine( int argc, char * argv[] )
 	}
 	
 	if (fSkip && !(fPasscode || fCard)) {
-		errorExitWithUsage("must specify a passcode to `--skip' to with -p or -n,-r,-c.");
+		errorExitWithUsage("must specify a passcode to `--skip' to with -p or -c.");
 	} 
 	
 	if ( fText && !(fNext || fCard || fPasscode) ) {
