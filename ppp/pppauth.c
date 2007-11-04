@@ -27,6 +27,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "ppp.h"
 
@@ -208,6 +209,15 @@ int main( int argc, char * argv[] )
 	if (fTime && !fKey) {
 		printf("%s\n", getPasscode(NULL));
 	}	
+	
+	/* display any warnings */
+	char buffer[2048];
+	while (pppWarning(buffer, 2048)) {
+		if (strlen(buffer)) {
+			fprintf(stderr, "%s\n", buffer);
+		}
+	}
+	
 	             
 	/* cleanup , zero memory, etc */
 	mp_clear(&n);
