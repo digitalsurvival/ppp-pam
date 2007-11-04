@@ -40,11 +40,13 @@ extern int fNext;
 extern int fName;
 extern int fCard;
 extern int fDontSkipFailures;
+extern int fShowPasscode;
 extern int fRow;
 extern int fCol;
 extern int fPassphrase;
 extern int fPasscode;
 extern int fVerbose;
+extern int fUseVersion;
 extern int numCards;
 
 extern mp_int cardNum;

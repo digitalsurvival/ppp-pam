@@ -1,0 +1,273 @@
+testvectors                        [1]
+    A    B    C    D    E    F    G
+ 1: BcUq xzF5 2gvj r:fF HdcF =5FD LebG
+ 2: WC6b ?TPa mpRh 4F=v !Rzs tpUU 8hfk
+ 3: PJqx =b?k M@yz KMdT JEL9 bn2= 63sB
+ 4: ACrx aBtU cMe@ rBzu BK2F 4+!D zsXf
+ 5: !L=U ySBa Lu4@ 9XL4 XRUM hCNw eVwM
+ 6: Nwja vePz mGw@ i8kv sG9v BEqf +gKA
+ 7: gr+j A+fg kKcu ES@w 7jc# DXmt #=JD
+ 8: m#VY tJf3 K4vE 8wB4 ADhT Mvps S8u2
+ 9: ebrA b8xt %t6D %raq BUaq vb6C stwB
+10: Gm5? LHKJ WDPK SFe6 M@WH JNv2 5pZY
+
+testvectors                        [2]
+    A    B    C    D    E    F    G
+ 1: YdaU @VAg Zu#: seX2 3Bdm FANA D6!F
+ 2: yb#Z %bgM @4wj :kj7 u#LJ qGN3 UX8%
+ 3: oMkE domM DbHr pSdu BAT! :hFo wdFv
+ 4: KbAG HFF+ iGR+ FNii Bv74 FBap Xcy8
+ 5: ySuA UiKh BTML 5fHp VLKJ rSSn u55z
+ 6: :k!5 YvJ5 2#E8 A=e+ Y?b5 Sv%H UXx8
+ 7: cm%H ent: ?P?% JgLt F7=f boZx qg3G
+ 8: j%nF wV=F 3eFt uVeq R6As Sm%S RGv9
+ 9: @qFh NnvD gpxB bUmC gX2e ++Tb 8rFL
+10: pkZD fu?! +qmq c3WA 5MJU Ry5? ZGow
+
+testvectors                        [3]
+    A    B    C    D    E    F    G
+ 1: YUth tk2f yaU8 9yx9 hit+ 7vPc Sm6S
+ 2: thh4 X@mz %@Dy UX%f ?T=h MfjP LL%!
+ 3: AaSH mWyZ KzHY VZJS :E6j k+zB 9raR
+ 4: g=Ko MuwF oNur i@Nh ifJd Zc3% R=F9
+ 5: z6%C tSow uFLE 5!eo RCTk Htpf Hge+
+ 6: 3fBD aR=8 od5g 5i7y :#v@ fghV DNB4
+ 7: EoYD eD%S o#9! X2J# 9emm MLUp dCMV
+ 8: A57F 7e:i W@nF xaHZ fgYS X9Ho +!2Z
+ 9: uZ7n ssm% jpmF 5hey CBXJ #zjE xyK@
+10: bqEW vUph D%e4 foCi iXA# GikG U5Pi
+
+testvectors            [1,234,567,890]
+    A    B    C    D    E    F    G
+ 1: egXF BsX6 vv6y Hieq SGgh Pbaj iy5G
+ 2: CpUJ :Fwi 57Lj +5YH cCvm axAa Z:pu
+ 3: B:xt aSp4 vWSW ?SDk 4wDu 7WuX Y!ph
+ 4: ?nyw dPbB @w!= Kd:b ?fm# P!Uu gM8+
+ 5: xiF7 hN3@ qUJf ?v@G yajW tPrF 5d=M
+ 6: VtPh xhLV aC7t qhnq %7rr wcXf HT?#
+ 7: XeL% fkY3 h5@X ugg@ mR2d AVup 9W9k
+ 8: %T9M yjKg PkAp XJer s9TL XLzi ++8V
+ 9: Ns:a dfeN gy7B PFte wVF7 WSVq r8LH
+10: 5TBK zq?D iaHH HEPg Y4C! itfi p#sw
+
+testvectors            [1,234,567,891]
+    A    B    C    D    E    F    G
+ 1: ZRL# Gbes bSB@ YhHb %pRs hyt9 iVhV
+ 2: =Hp9 9KK9 r!M: mpww B8yF aN8v CPh6
+ 3: ui=3 RYos VrDG E%yG g#Yd ?oT2 Fwwm
+ 4: wz5F sKnq 7=Lh Xy@B =kLe Xk@9 WrdY
+ 5: AnkP bM46 JU!8 hB?o SFae !AjX k7!v
+ 6: gvdj +HAk Pnen esC+ kYd3 KJDt Me=K
+ 7: tr7B sFk= @aGR z%?E uD@G WeV! XS:6
+ 8: KKFn UB3u %FRW m@c3 %JDS Zwjf +wuc
+ 9: UB66 ==e4 DZm: A@f= WLeS xRh% WRB!
+10: #NER wXfd vcVP Nm#r 9Xzg Ktox kPmc
+
+testvectors            [1,234,567,892]
+    A    B    C    D    E    F    G
+ 1: 92Vc Bw4p K=eP 2wGm B8Nb DZFd D6BF
+ 2: #zbp ?8%# =t:@ zkZg rmsj pKLP MwRc
+ 3: Tc%k 9NHS @nVm #W?M nG:p 6xwC Rg6j
+ 4: C!UL jL!v APnn iR!J Ea3S 5XN% yuHZ
+ 5: Htxr kcfr 9%cR bTS? aip: 6RdT at:q
+ 6: 24W# 2dNP ?YHW bjvW CvGA hLWU !k?8
+ 7: GzZF fWnV W!Se 9vDw t@th v3ua KV:E
+ 8: ZWTg Jf#6 VMLs p8CH +H9k Zcov 7HMF
+ 9: Nqb6 2ny9 TA3@ !Fw7 %%NB PGhw GPnt
+10: %9%r e7VA YDpD gYb2 YySS uV!F 9+#f
+
+testvectors                   [65,536]
+    A    B    C    D    E    F    G
+ 1: CzwS ttr9 Nzb= FL:a bHBP iiuY w:C2
+ 2: @A@8 emK3 TwxR 2c7b KgLh zH3Y F7Gs
+ 3: %:hE ALMa =+vZ keWc i5yc #3EF F+Cz
+ 4: RcHo PZ:m eu#J +yMF M3ZC tJTG 223=
+ 5: d9L8 AdFb 4Gk3 N:!L :vpD EbUe vL%Z
+ 6: eU7w MRTe ::DU J6Zg setz MKjs dtc8
+ 7: tp#% dhDR 4b?h HVgw jwt% 4yd4 AVad
+ 8: ngJ4 Hih? 9HHL x!8f 7%z3 ?33Z n9uX
+ 9: R=kd 9e9% nw3% VR6k 9m3k @jxU hNz6
+10: PjAJ PGfm CS4H 7XNv +%79 VFRr r=4M
+
+testvectors                   [65,537]
+    A    B    C    D    E    F    G
+ 1: @+8e =NKj Gc=x Cfhx 39+q 8sr4 qY4?
+ 2: hco2 7U@3 tTWX ?Zuu !9u= dtNT detY
+ 3: @FD5 ZrXY R!oV md9C puKT BVaZ Msd=
+ 4: BL2L Hjm? ZuzN #kna sMdk Nr!P GmGn
+ 5: 6sRe d?d! XDDb sTc= 7m3P gLo6 ecVG
+ 6: yA+Z TkFd h5NR aEa? @5cs 3nv6 %DEo
+ 7: L4Lb 6kqf JzEL dbzd NCU= tep= W5jp
+ 8: aw2B 2miz 9Yxx qy@2 WrC% aYdD A356
+ 9: hPdw GJ!? nGig Z4?r @CqS 3=@? Fep#
+10: uAbs i4DZ Tcz4 DrZh MGKp +qMa :@Hf
+
+testvectors                   [65,538]
+    A    B    C    D    E    F    G
+ 1: Pbuv wW7: +i6Z yPNN cjm9 Tj6M nd:K
+ 2: AXPz V=Ec NdY@ qEFm =hFC y3@5 !kgF
+ 3: BswM K4an DZzs 2sv% 7!pT ?K@: +JeW
+ 4: DHqG W+bT 7vW% HLN% :Fpb 95ZM Uzwa
+ 5: bebi 4=u= eq#X PHR2 Kvya 6i5t hL5J
+ 6: xnwT LtH2 zq#o zRuv 7R@= JkV8 =W7v
+ 7: g4Rn YKjH kWYr vouj 2KHa zo5b EoYq
+ 8: dfon 3gi3 y=aA TPi7 8URs d=9f ijt%
+ 9: CaqV cXVU vLbv VVwb j9Hn JTt@ Emym
+10: CMye VHqE aJHK kxdh zSsp qa!o ayS5
+
+testvectors            [4,294,967,295]
+    A    B    C    D    E    F    G
+ 1: sz3% HRZs ULdG %#Cs rLB3 NKph UG4b
+ 2: tf5F 8me8 #jpM Tha2 ?we# z2jg =iDZ
+ 3: cgT+ TAs: D:n2 :cPJ %KFz g8#y BWhz
+ 4: ZuPY TM9z Pn8y =pkX dxcB NYH4 8?wT
+ 5: G66q WtNK p+gD ?vqw #5GH @HDo NYBW
+ 6: %iks nBUb jAAS WEUS HR?f kogv fasJ
+ 7: XHKb C#de FK6s q!cw CdGN YLzS AHfT
+ 8: =6D+ %HLn BBaq XXoq yXSV onj3 zf6U
+ 9: @Gx5 aPe4 hqPz %RZu nWFh uDjC miMC
+10: ETsp K7nz Tj!W sgUf 66TY tCXn @E%x
+
+testvectors            [4,294,967,296]
+    A    B    C    D    E    F    G
+ 1: N#=H 5L%c s:!W AfrJ %J4H j6!p 4%eM
+ 2: VGfY U7xX +sZE !+EX j!:z JCHX xj8p
+ 3: ?s23 =K:y M%Jq Ngwt k#Wd Xn7T m+us
+ 4: eeRF va3D y9Z7 q@iM 9:z3 :Roy %7Jz
+ 5: ?mgH 2+hi b9Wf R:hL :VNp tz45 ktNJ
+ 6: cPqq Vbpg F6Wp cSeh ebfN rNqV rHbF
+ 7: MJU9 KdU6 PXHW !ZtE s5HA wZEd o:h%
+ 8: fgp: t4Jc @AKw g2tC jSee XcZ8 nypg
+ 9: yfj# XwD? #%ZZ 3X?5 gTLk SSug FEjN
+10: yPZk zh3m xXup !@cA cRVd nL4: @3Nh
+
+testvectors            [4,294,967,297]
+    A    B    C    D    E    F    G
+ 1: hbDj @Cj% YJsF yK8W 4Zwb X#qX UHy6
+ 2: @@4! ppGV sHiW !aqe W2Bv 84H? ZzDz
+ 3: Tv#+ c3f+ ??dK f3ZB q!?7 tmEm YvB6
+ 4: Bpn8 mCBN sPjo xHpG jEv5 mzVp hA8s
+ 5: skW9 P?DN hosT eUSD wgV@ C9aM #!cg
+ 6: P888 rMMo M8rV Ek=M #cbX jrN2 a=%%
+ 7: aCYb t#43 Cd:q uEFM %+eB ?pG+ yUaD
+ 8: 3M:o bXRp cy?? 5bLR Vg3: eYJH shCn
+ 9: TKCe tyUi gxvi U#72 K4Xk yLW3 ZDXn
+10: PG=t sT=5 nDqT pB+f HWy? 2ajv MRET
+
+testvectors
+    A    B    C    D    E    F    G
+ 1: hDra UwB: nnBA CAvS 58@e j3rK wj=d
+ 2: bDuL ZMrT 7tEp p!:w :Nre Dxf: fD3:
+ 3: +d@K 7vCJ cKSG P7pu xaev zsu6 E:2a
+ 4: inh5 HAhf K3SD cFno C%pL Wy6V bKJ9
+ 5: hb9@ evXo 6e4# nS6x 7UDd DhT+ KPzj
+ 6: !6k? DwBN xAum E+uC pDfp H:=d JfZS
+ 7: ahku W2?F q:?J 6rH6 vak7 UJzm c72Z
+ 8: RtHa =WC6 3AK2 ph8r G=xx d4EG 5qjP
+ 9: JoM# @Dvw 6gG= 6op6 637F K6E: 98Cs
+10: ppfv haBp zCHW L:i% f:#Y 3NKZ Xj+b
+
+testvectors
+    A    B    C    D    E    F    G
+ 1: Z%Ph sxRe #j9s B?CG #eEj ca@X 6qw9
+ 2: :5:! EKLc fFNy r=Wq Ex9B ?Mc+ UDBY
+ 3: gTof te@E uAEq DoDj BM9# FU9X m=t#
+ 4: 4SqX !v9p d:nR jEkG wuHH uiWZ hv?J
+ 5: P!nG NCay SEDg gsRn NSWd vEE+ nsYN
+ 6: YCEL XVFd rUu3 pEEK RMKh 33wi 22U6
+ 7: 2s=X S%pL qmXb 3dA# 6yqa YkJw 4YnL
+ 8: FyZP PBsv W4K: LcN5 9s7A Ym@t tJFn
+ 9: a89X gPo? C5qJ tNBB 8+VN P:!H JNg2
+10: 4456 e!%7 bJUP xacW ?Awr ufkx r3Kx
+
+testvectors
+    A    B    C    D    E    F    G
+ 1: sCTu y4:V 4LHU M%ea mqmW bJzV WoKU
+ 2: L%=Y hXZ8 rAFG cgbT @sZ: qwgN YCE+
+ 3: ?aUt FYPK pCK@ ZfK@ @!?n 6EG2 jx#8
+ 4: tAxo =TMt o9VT nnHD #myK ESor PHBo
+ 5: e6:F SX!! T:6w :rj@ 96qA B#4X ajdq
+ 6: %yK! c+p6 =8WD +Tj7 vz?q GajZ V56r
+ 7: ozge r9JL 2mYZ U:M5 eYLs 23ZK tpiN
+ 8: y:Po +JgF sM+H wVnY @Kw+ =xs@ ws@9
+ 9: x:Mf mdUG Rxwi vzy6 7rHC !t@: bBbH
+10: kjMp H8fd JJ2v xdN5 CK!u gd?f xJPb
+
+testvectors
+    A    B    C    D    E    F    G
+ 1: sG4B @C2U @d82 =AL9 TBKt PN6% 2gr%
+ 2: :p8d 7LwB 9gKt dXcp 9gV7 pATM oW:G
+ 3: Repg G%2k wcW: 7X%w 5XE% D!sc C3PA
+ 4: fLJU %Kr8 8i?s r2d? !#ru EJ9s iP:Z
+ 5: a#Rz Zqn# JjrV ZAeY +uhp oTwC tqTo
+ 6: sYpB wZ2m FfMY y:X5 6SR+ LiEP Rw:D
+ 7: C74U p@@x 6nBx 4xRn :UMm sc:C R@4p
+ 8: @EjE WYq3 =CHC CRa! Eqsg !=L3 FBEt
+ 9: Hb3# C:es :?jG h?Lq E9qz 5@Ti 7jwx
+10: pxh9 @xZS JFR# vWMy JjS2 icHZ 3:Te
+
+testvectors
+    A    B    C    D    E    F    G
+ 1: 3vLJ iabC YbhL @EMS rLsV sHYy =8iZ
+ 2: UYAZ uPR+ TWnq jqG7 h9Hh p?FH WYZt
+ 3: 2wcp ece4 WouB Ki%6 gswk YRU% xkJn
+ 4: Lnk2 =wmp DrGa hSRL EUeL AWUC rUA:
+ 5: sPax 8WHc ajje cZL+ bhwB Me!c u8dE
+ 6: Mbzf BjVW CmWU RoK@ K9b9 n!b+ 7ybX
+ 7: !:cX L%8n 4mG% w+7q Ruhz F7yG o?#M
+ 8: Henz H9xM oA6+ vpH7 +TdE 89:9 M8%M
+ 9: :qWh Bmkv ?NMK gRFr @ZAk BC6v zx#A
+10: Anm9 52J7 iN9v 556E rLv% c=yM WCPU
+
+testvectors
+    A    B    C    D    E    F    G
+ 1: Fuan eLcr NVWY nzUo d=DF uRos 2Rbv
+ 2: Cq5r Y5D6 bCgS di#% w%zu MhU# KJAn
+ 3: qs5y 338X 6VhE C7Eg Ff?D UrMF L?!2
+ 4: gUyB LXsh oeeL D47b K5s4 !3#t sikZ
+ 5: YMFG xzhH XWeA qt?W ytb9 qx7r ?KAZ
+ 6: YxVb vHSq oqi= :q3D =7MW 4W+e zVaa
+ 7: KxaE tzCZ SVga +jP7 J3Zy Ub!a 6iBs
+ 8: zspK C54Z q4dS F4r+ =RuL GDwB M!N%
+ 9: D@54 g?Sy YkEj aRG4 SCcL Txzq Motx
+10: XqSg 7n+4 msYP LMkz h:zu 9GoA ?ZHW
+
+testvectors
+    A    B    C    D    E    F    G
+ 1: 8i9M w7DX U#YZ 5YeP Jnt2 k5#9 9BPu
+ 2: a2iq vg=b jvqx 8!E: c2ym BFqC ZBeu
+ 3: PPU! eKK! Cs5h 8AzW G5=w jr7h ErEj
+ 4: NSXZ xFfv bbGq c@Y7 H!K5 gZdW 7=Z9
+ 5: @=r5 66P# Rdim sW:D 8:jN R7T= LXEf
+ 6: XTWB zFyN Za!z nY!H cSdR 23@d wLy#
+ 7: ?gaV TC4d 2=r9 J=3J DZ3r rY3g gtNA
+ 8: FKa% d%aP NKxB bcC= hA9o U:5f Wc3x
+ 9: jYRn UA:f 2rem +XzL d%%j SLFW vxdN
+10: 5m8N F#ds S!W9 %oPv ndC? cxzT #sAV
+
+testvectors
+    A    B    C    D    E    F    G
+ 1: 4xCy xyg? oWHL By2x DsC= Z7Sp tJL%
+ 2: 5rpM bLo8 !+je NeRZ kG%e j==t JA2F
+ 3: :L%= yJ6g xVM? LeT7 qyN9 u@qf WjsV
+ 4: ECYE %M%A #SrV Zn4G %8cv ndqA ETUx
+ 5: 7XEf TPuE apNu 9e@6 ZT?9 g5eL GRAb
+ 6: D%f+ mYMz oHMT EvBy qtVn uRps BG6X
+ 7: NbGz Nsbe LHSj :WvF u@pi Lg4F Rky9
+ 8: 8Tdk G#F7 R:Wk =Fqy Euyh HGze ZTgC
+ 9: Bjse DS#X =4yc 37DC :84V G2Fe RZ@W
+10: dfXD +#sc P+7N gX+: ZNXj UrNx VGSU
+
+testvectors
+    A    B    C    D    E    F    G
+ 1: mMfn H5BY AseV @8Wd toEE @Au9 nwTr
+ 2: HrJP @?3j PVkw %NG7 M3dp qLxS 5?!T
+ 3: fim3 y=gM sJ:: N9Tn 6+8x j@!N B2?U
+ 4: BMRR U2em Yz%= i9+j s7X2 9frT LTST
+ 5: yz42 TWuG GuM7 C:j7 NJJ? jhaN T+yR
+ 6: YYMp 8Eeh ?E@= pWx: WPN8 !4Yy KzF:
+ 7: FjRY sRUL URpc !yxY hFVs CwTV PKgj
+ 8: fjWM Usam BKpD izh2 hZZw nvpH Jw#9
+ 9: N6bo wXRg jbHc !RcV GyVv C?dh DRPt
+10: R%D9 a9tv 4GMh F@6M xK6d ArPC 7gc3
+

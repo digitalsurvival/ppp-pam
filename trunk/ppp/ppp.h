@@ -69,6 +69,7 @@ void getPasscodeBlock(mp_int *startingPasscodeNum, int qty, char *output);
 void calculateCardContainingPasscode(mp_int *passcodeNum, mp_int *cardNum);
 void getNumPrintedCodesRemaining(mp_int *mp);
 int pppVersion();
+void useVersion(int v);
 void setKeyVersion(int v);
 int keyVersion();
 void pppSetFlags(unsigned int mask);
