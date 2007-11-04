@@ -626,6 +626,10 @@ int pppVersion() {
 	return _ppp_ver;
 }
 
+void useVersion(int v) {
+	_ppp_ver = v;
+}
+
 void setKeyVersion(int v) {
 	_key_ver = v;
 }

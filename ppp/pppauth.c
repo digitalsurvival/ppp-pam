@@ -178,14 +178,16 @@ int main( int argc, char * argv[] )
 			for (i=0; i<numCards; i++) {
 				mp_int mp;
 				mp_init(&mp);
-				mp_add_d(lastCardGenerated(), 1, &mp);
-				printCard(&mp);
 				if ( ! fPassphrase ) {
+					mp_add_d(lastCardGenerated(), 1, &mp);
+					printCard(&mp);
 					/* Keep track of last card printed with --next if 
 					 * user's key was used.
 					 */
 					incrLastCardGenerated();
 					writeState();
+				} else {
+					printCard(&cardNum);
 				}
 				mp_add_d(&cardNum, 1, &cardNum);
 				mp_clear(&mp);

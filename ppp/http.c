@@ -47,9 +47,9 @@
 static char secretPath[128] = "";
 static const char *codes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
-int _base64_encode_path(const unsigned char *in, unsigned char *out) {
+int _base64_encode_path(const unsigned char *in, char *out) {
 	unsigned long i, leven;
-	unsigned char *p;
+	char *p;
 
 	if (in == NULL) return -1;
 	if (out == NULL) return -1;
@@ -294,14 +294,16 @@ int httpProcess(FILE *f) {
 			for (i=0; i<numCards; i++) {
 				mp_int mp;
 				mp_init(&mp);
-				mp_add_d(lastCardGenerated(), 1, &mp);
-				htmlCard(f, &mp);
 				if ( ! fPassphrase ) {
+					mp_add_d(lastCardGenerated(), 1, &mp);
+					htmlCard(f, &mp);
 					/* Keep track of last card printed with --next if 
 					 * user's key was used.
 					 */
 					incrLastCardGenerated();
 					writeState();
+				} else {
+					htmlCard(f, &cardNum);
 				}
 				mp_add_d(&cardNum, 1, &cardNum);
 				mp_clear(&mp);

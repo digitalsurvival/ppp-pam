@@ -50,6 +50,7 @@ int fShowPasscode = 0;
 int fPassphrase = 0;
 int fPasscode = 0;
 int fVerbose = 0;
+int fUseVersion = 0;
 int numCards = 0;
 static char passphrase[1024] = "";
 static char passcode[1024] = "";
@@ -127,6 +128,7 @@ void usage() {
 		"  --showPasscode     Used with --key to specify that on authentication, system\n"
 		"                     will display passcode as it is typed.\n"
 		"  -v, --verbose      Display more information about what is happening.\n"
+		/* -u, --useVersion <N>              UNDOCUMENT feature used only for testing */
 		, progname()
 	);
 }
@@ -238,13 +240,14 @@ void processCommandLine( int argc, char * argv[] )
 		{"showpasscode",no_argument,		&fShowPasscode, 1},
 		{"showPasscode",no_argument,		&fShowPasscode, 1},
 		{"verbose",		no_argument, 		0, 'v'},
+		{"useVersion",	required_argument,	0, 'u'},
 		{0, 0, 0, 0}
 	};
 
     while (1) {
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
-		c = getopt_long_only(argc, argv, "kshtm:c:p:v", long_options, &option_index);
+		c = getopt_long_only(argc, argv, "kshtm:c:p:vu:", long_options, &option_index);
   
 		/* Detect the end of the options. */
 		if (c == -1)
@@ -303,6 +306,10 @@ void processCommandLine( int argc, char * argv[] )
 				break;
 			case 'v':
 				fVerbose = 1;
+				break;
+			case 'u':
+				fUseVersion = 1;
+				useVersion(atoi(optarg));
 				break;
 				
 			case '?':
@@ -420,6 +427,11 @@ void processCommandLine( int argc, char * argv[] )
 	if (fTime && fSkip) {
 		errorExit("Cannot skip.  Key is for time-based authentication.");
 	}
+	
+	if (fUseVersion && !fPassphrase) {
+		errorExit("--useVersion can only be used with --passphrase");
+	}
+	
 	
 }
 
