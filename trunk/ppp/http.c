@@ -222,7 +222,7 @@ int httpProcess(FILE *f) {
 
 	if (strcasecmp(method, "GET") != 0)
 		httpSendError(f, 501, "Not supported", NULL, "Method is not supported.");
-	if (strncmp(path, "/", 1) == 0) {
+	if (strncmp(path, "/", 2) == 0) {
 		httpSendHeaders(f, 200, "OK", NULL, "text/html", /* length */ -1, /* statbuf->st_mtime */ -1);
 		if (fNext) {
 			int i;
@@ -285,16 +285,15 @@ void httpServe() {
 #endif		
 	}
 		
-	int waiting = 1;
-	while (waiting) {
-		int s;
-		FILE *f;
+	int s;
+	FILE *f;
 
-		s = accept(sock, NULL, NULL);
-		if (s < 0) break;
-
-		f = fdopen(s, "r+");
-		waiting = httpProcess(f);
+	s = accept(sock, NULL, NULL);
+	
+	if (s >= 0) {
+		f = fdopen(s, "a+");
+		httpProcess(f);
+		fflush(f);
 		fclose(f);
 	}
 
