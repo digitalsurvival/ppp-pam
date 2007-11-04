@@ -35,6 +35,7 @@
 #include <arpa/inet.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <uuid/uuid.h>
 
 #include "ppp.h"
 
@@ -43,6 +44,65 @@
 #define SERVER "webserver/1.0"
 #define PROTOCOL "HTTP/1.0"
 #define RFC1123FMT "%a, %d %b %Y %H:%M:%S GMT"
+static char secretPath[128] = "";
+static const char *codes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+int _base64_encode_path(const unsigned char *in, unsigned char *out) {
+	unsigned long i, leven;
+	unsigned char *p;
+
+	if (in == NULL) return -1;
+	if (out == NULL) return -1;
+
+   p = out;
+   leven = 3*(32 / 3);
+   for (i = 0; i < leven; i += 3) {
+       *p++ = codes[(in[0] >> 2) & 0x3F];
+       *p++ = codes[(((in[0] & 3) << 4) + (in[1] >> 4)) & 0x3F];
+       *p++ = codes[(((in[1] & 0xf) << 2) + (in[2] >> 6)) & 0x3F];
+       *p++ = codes[in[2] & 0x3F];
+       in += 3;
+   }
+   /* Pad it if necessary...  */
+   if (i < 32) {
+       unsigned a = in[0];
+       unsigned b = (i+1 < 32) ? in[1] : 0;
+
+       *p++ = codes[(a >> 2) & 0x3F];
+       *p++ = codes[(((a & 3) << 4) + (b >> 4)) & 0x3F];
+       *p++ = (i+1 < 32) ? codes[(((b & 0xf) << 2)) & 0x3F] : '=';
+       *p++ = '=';
+   }
+
+   /* append a NULL byte */
+   *p = '\0';
+
+   /* return ok */
+   return 0;
+}
+
+static char * _create_obfuscated_path() {
+	int i;
+	uuid_t uuid;
+	unsigned char entropy[32];
+	unsigned char bytes[32];
+
+	uuid_generate_random(uuid);
+	for (i=0; i<16; i++) {
+		entropy[i] = uuid[i];
+	}
+	
+	uuid_generate_time(uuid);
+	for (i=0; i<16; i++) {
+		entropy[i+16] = uuid[i];
+	}
+	
+	sha256(entropy, 32, bytes);
+	_base64_encode_path(bytes, secretPath);
+
+	return secretPath;
+}
+
 
 void htmlStart(FILE *f) {
 	fprintf(f, "<html>\n");
@@ -220,9 +280,13 @@ int httpProcess(FILE *f) {
 
 	fseek(f, 0, SEEK_CUR); // Force change of stream direction
 
-	if (strcasecmp(method, "GET") != 0)
+	if (strcasecmp(method, "GET") != 0) {
 		httpSendError(f, 501, "Not supported", NULL, "Method is not supported.");
-	if (strncmp(path, "/", 2) == 0) {
+	}
+	if (strlen(path) != strlen(secretPath)+1) {
+		httpSendError(f, 404, "Not Found", NULL, "File not found.");
+	}
+	if (strncmp(path+1, secretPath, 64) == 0) {
 		httpSendHeaders(f, 200, "OK", NULL, "text/html", /* length */ -1, /* statbuf->st_mtime */ -1);
 		if (fNext) {
 			int i;
@@ -272,7 +336,7 @@ void httpServe() {
 
 	getsockname(sock, (struct sockaddr *)&sin, &slen);
 	char url[128];
-	sprintf(url, "http://localhost:%d", ntohs(sin.sin_port));
+	sprintf(url, "http://localhost:%u/%s", ntohs(sin.sin_port), _create_obfuscated_path());
 	
 	if ( ! fork()) {
 #ifdef OS_IS_MACOSX
