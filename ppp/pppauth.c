@@ -212,13 +212,14 @@ int main( int argc, char * argv[] )
 	
 	/* display any warnings */
 	char buffer[2048];
-	while (pppWarning(buffer, 2048)) {
-		if (strlen(buffer)) {
-			fprintf(stderr, "%s\n", buffer);
+	if (!fKey && !fPassphrase) {
+		while (pppWarning(buffer, 2048)) {
+			if (strlen(buffer)) {
+				fprintf(stderr, "%s\n", buffer);
+			}
 		}
 	}
 	
-	             
 	/* cleanup , zero memory, etc */
 	mp_clear(&n);
 	clCleanup();

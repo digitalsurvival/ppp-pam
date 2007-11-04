@@ -60,7 +60,7 @@
  */
 
 /* latest PPP algorithm version that's supported by this code */
-static int _ppp_ver = 1;
+static int _ppp_ver = 2;
 
 /* PPP version that the keyfile was created in */
 static int _key_ver = 0;
@@ -454,6 +454,21 @@ int pppWarning(char *buf, int size) {
 			);
 		}
 		break;
+	case 3:
+		if (pppVersion() > keyVersion()) {
+			snprintf(buf, size, "\n"
+				"===========================================================\n"
+				"            NOTICE:  NEW PPP VERSION AVAILABLE             \n"
+				"\n"
+				"  Version %d of the PPP algorithm is now supported.\n"
+				"\n"
+				"  It is recommended that you upgrade to the new version by\n"
+				"  generating a new random key and printing new passcodes.\n"
+				"===========================================================\n",
+				pppVersion()
+			);
+		}
+		break;
 	default:
 		warnNum = -1;
 		break;
@@ -560,6 +575,9 @@ void generateRandomSequenceKey() {
 	for (i=0; i<16; i++) {
 		entropy[i+16] = uuid[i];
 	}
+
+	/* use the current ppp version */
+	setKeyVersion(pppVersion());
 	
 	switch (keyVersion()) {
    	case 1:
