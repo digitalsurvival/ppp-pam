@@ -34,10 +34,11 @@
 #include <pwd.h>
 #include <ctype.h>
 
+#include "ppp.h"
+
 #include "sha2.h"
 #include "cmdline.h" 
 
-#include "ppp.h"
 #include "keyfiles.h"
 
 static char *private_key_file_name = "/private_key";

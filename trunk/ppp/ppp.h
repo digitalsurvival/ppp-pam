@@ -29,6 +29,10 @@
 #ifndef _PPP_H_
 #define _PPP_H_
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "sha2.h"
 #include "rijndael.h"
 #include "mpi.h"
