@@ -255,8 +255,8 @@ static void _write_data(mp_int *mp, FILE *fp) {
 	/* write ppp identifer */
 	fwrite(" PPP ", 1, 5, fp);
 
-	/* write ppp version */
-	fprintf(fp, "%04d", pppVersion());
+	/* write key version */
+	fprintf(fp, "%04d", keyVersion());
 	fwrite(" ", 1, 1, fp);
 	
 	/* Current data format is versioned file, 
