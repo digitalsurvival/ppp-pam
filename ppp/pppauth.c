@@ -54,9 +54,6 @@ int main( int argc, char * argv[] )
 		printf("Verbose output enabled.\n");
 
 	if (fVerbose) {
-		if (pppVersion() == 2) {
-			printf("EXPERIMENTAL UNTESTED PPP VERSION BEING USED\n");
-		}
 		printf("PPP Version in use: %d\n", pppVersion());
 	}
 	
