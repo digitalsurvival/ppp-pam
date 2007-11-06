@@ -64,9 +64,9 @@ void printKey (mp_int *key) {
 	}
 	i = len - mp_unsigned_bin_size(key);
 	mp_to_unsigned_bin(key, buf+i);
-	             
+	
 	for (i=0; i<len; i++) {
-		printf("%2.2x", buf[len-i-1]);
+		printf("%2.2X", buf[len-i-1]);
 	}
 }
 
