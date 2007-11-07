@@ -103,11 +103,11 @@ int main( int argc, char * argv[] )
 	
 	if (fSkip) {
 		/* Skip forward in passcode space */
-		mp_int new;
-		mp_init(&new);
-		calculatePasscodeNumberFromCardColRow(&cardNum, 0, 0, &new);
+		mp_int newNum;
+		mp_init(&newNum);
+		calculatePasscodeNumberFromCardColRow(&cardNum, 0, 0, &newNum);
 		if (fPasscode) {
-			calculatePasscodeNumberFromCardColRow(&cardNum, colNum, rowNum, &new);
+			calculatePasscodeNumberFromCardColRow(&cardNum, colNum, rowNum, &newNum);
 		}
 		
 		if (fVerbose) {
@@ -115,28 +115,28 @@ int main( int argc, char * argv[] )
 			mp_init(&mp);
 			mp_add_d(currPasscodeNum(), 1, &mp);
 			printf("Current passcode number: %s\n", mpToDecimalString(&mp, ','));
-			mp_add_d(&new, 1, &mp);
+			mp_add_d(&newNum, 1, &mp);
 			printf("Skipping to passcode number: %s\n", mpToDecimalString(&mp, ','));
 			mp_clear(&mp);
 		}
 		
-		if (mp_cmp(&new, currPasscodeNum()) <= 0) {
+		if (mp_cmp(&newNum, currPasscodeNum()) <= 0) {
 			errorExit("you can only `--skip' forward.");
 		}
 		
-		setCurrPasscodeNum(&new);
-		calculateCardContainingPasscode(currPasscodeNum(), &new);
-		if (mp_cmp(lastCardGenerated(), &new) < 0) {
-			mp_sub_d(&new, 1, &new);
-			setLastCardGenerated(&new);
-			mp_add_d(&new, 1, &new);
+		setCurrPasscodeNum(&newNum);
+		calculateCardContainingPasscode(currPasscodeNum(), &newNum);
+		if (mp_cmp(lastCardGenerated(), &newNum) < 0) {
+			mp_sub_d(&newNum, 1, &newNum);
+			setLastCardGenerated(&newNum);
+			mp_add_d(&newNum, 1, &newNum);
 		}
 		
 		if (fVerbose) {
-			mp_add_d(&new, 1, &new);
-			printf("Card containing passcode: %s\n", mpToDecimalString(&new, ','));
+			mp_add_d(&newNum, 1, &newNum);
+			printf("Card containing passcode: %s\n", mpToDecimalString(&newNum, ','));
 		}
-		mp_clear(&new);
+		mp_clear(&newNum);
 		
 		writeState();
 	} 
