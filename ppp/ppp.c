@@ -319,7 +319,7 @@ char *mpToDecimalString(mp_int *mp, char groupChar) {
 	_zero_bytes((unsigned char *)d_buf, d_buflen);
 	free(d_buf);
 	d_buflen = len + len/3 + 2;
-	d_buf = malloc(d_buflen);
+	d_buf = (char *)malloc(d_buflen);
 	mp_toradix(mp, (unsigned char *)d_buf, 10);
 
 	len = strlen(d_buf);
@@ -374,7 +374,7 @@ char *currCode() {
 	mp_clear(&row);
 	
 	free(d_code);
-	d_code = malloc(strlen("[]") + strlen(cardstr) + 6);
+	d_code = (char *)malloc(strlen("[]") + strlen(cardstr) + 6);
 	sprintf(d_code, "%d%c [%s]",++r, c+'A', cardstr);
 	
 	mp_clear(&row);
@@ -385,7 +385,7 @@ char *currCode() {
 
 char *currPrompt() {
 	free(d_prompt);
-	d_prompt = malloc(strlen("Passcode : ") + strlen(currCode()) + 6);
+	d_prompt = (char *)malloc(strlen("Passcode : ") + strlen(currCode()) + 6);
 	sprintf(d_prompt, "Passcode %s: ", currCode());
 
 	return d_prompt;
