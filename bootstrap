@@ -4,11 +4,9 @@ case $1 in
   clean)
 	rm -f Makefile.in aclocal.m4 compile configure depcomp install-sh
 	rm -f missing mkinstalldirs config.main config.sub config.guess
-	rm -rf build/sh
 	rm -f libtool config.log .configstatus ltmain.sh build/* Makefile
 	rm -f config.h.in autom4te.cache/*
 	rm -rf .deps build/.deps build/.libs
-	rm -rf sparsehash/autom4te.cache
 	echo Done with clean ;;
   prep)
 	./bootstrap clean

@@ -1,9 +1,0 @@
-This directory contains code that was contributed by other users of
-the MPI library.  It is included with the distribution in the hope it
-will prove useful; however, the individual contributions are the sole
-responsibility of their respective authors.
-
-Package		Description
---------------- --------------------------------------------------------
-mpi_cpp		Some C++ wrappers for the MPI library, contributed
-		by scroussette@yahoo.com
