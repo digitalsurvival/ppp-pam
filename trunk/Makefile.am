@@ -4,16 +4,9 @@ MYCFLAGS = -I./$(srcdir)/rijndael -I./$(srcdir)/sha2 -I./$(srcdir)/mpi \
 
 MPISRC = dummy.c ./$(srcdir)/mpi/mpi.c ./$(srcdir)/mpi/mpprime.c
 
-dummy.c: logtab.h mpi-types.h sh/include/google
+dummy.c: logtab.h mpi-types.h
 	echo "#include <stdio.h>" > dummy.c
 
-sh/include/google: sh/Makefile
-	make -C sh install
-	
-sh/Makefile: ./$(srcdir)/sparsehash/configure
-	mkdir sh
-	cd sh; ../$(srcdir)/sparsehash/configure --prefix=`pwd`
-	
 logtab.h: ./$(srcdir)/mpi/make-logtab
 	$(PERL) ./$(srcdir)/mpi/make-logtab > $@
 
