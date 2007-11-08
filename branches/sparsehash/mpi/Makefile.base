@@ -1,0 +1,52 @@
+###
+### Base make macros used by other makefiles in this distribution
+###
+
+###----------------------------------------------------------------------
+### Begin user-configurable options
+###----------------------------------------------------------------------
+
+##
+## Define CC to be the C compiler you wish to use. 
+## The GNU C compiler (gcc) should work fine
+##
+#CC=cc
+CC=gcc
+
+##
+## Define PERL to point to your local Perl 5.x interpreter.  It is
+## possible that Perl 4.x might work, but I have not tested this.
+##
+PERL=/usr/bin/perl
+
+##
+## Define CFLAGS to contain any options your compiler requires.  The
+## following sets of options work for the compilers I have tried; your
+## local variants may have additional requirements.
+##
+## For GCC/EGCS (all systems)
+CFLAGS=-ansi -pedantic -Wall -O3 -funsigned-char
+##
+## For MIPSpro cc (SGI/IRIX)
+#CFLAGS=-ansi -fullwarn -woff 1140,1521 -O3
+
+##
+## Define LIBS to include any libraries you need to link against.  If
+## you have defined MP_LOGTAB to 0 in mpi-config.h, you will need to
+## include the math library (-lm) here, so that log() can be used.  On
+## SGI's running IRIX, it is worthwhile to include the customized
+## malloc() library (-lmalloc) here; performance is much better!
+##
+#LIBS=-lmalloc
+#LIBS=-lm
+LIBS=
+
+##
+## If your system requires the 'ranlib' program to be run on library
+## archives, define RANLIB to be the name of the program to run
+## (usually just 'ranlib' will do).  If your system doesn't have a
+## ranlib program, you probably don't need it, and can leave this
+## alone (IRIX does not, for instance).
+##
+#RANLIB=ranlib
+RANLIB=:

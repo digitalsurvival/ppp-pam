@@ -1,0 +1,40 @@
+The following authors have contributed to the ppp-pam project:
+
+  * Thomas Fors <tom@fors.net>
+
+Special thanks to:
+
+  * John Graham-Cumming for creating an implementation of the Perfect Paper
+    Passwords algorithm and releasing it to the open source community under
+    the BSD license.  John's code was used as the starting point for the code
+    you find here, and you may still find some remnants of it intact.
+    http://www.jgc.org/blog/2007/10/open-source-implementation-of-steve.html
+
+  * Steve Gibson for developing *and* sharing the Perfect Paper Passwords
+    algorithm with loyal listeners of the Security Now podcast.
+    https://www.grc.com/ppp.htm
+
+The ppp-pam project utilizes code from the following sources and would like
+to acknowledge the following authors:
+
+  * Rijndael Cryptography Algorithm
+    http://www.efgh.com/software/rijndael.htm
+    Author: Philip J. Erdelsky
+    License: Public Domain
+
+  * FIPS 180-2 Hash Algorithms
+    http://www.ouah.org/ogay/sha2/
+    Author: Olivier Gay
+    License: BSD License
+
+  * MPI: Arbitrary Precision Integer Arithmetic Library
+    http://www.cs.dartmouth.edu/~sting/mpi/
+    Author: Michael J. Fromberger
+    License: Public Domain
+
+  * Google Sparsehash Package
+    http://code.google.com/p/google-sparsehash/
+    Author: Craig Silverstein
+    License: BSD License
+
+
