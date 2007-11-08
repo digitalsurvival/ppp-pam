@@ -1,0 +1,20 @@
+#!/bin/sh
+
+case $1 in
+  clean)
+	rm -f Makefile.in aclocal.m4 compile configure depcomp install-sh
+	rm -f missing mkinstalldirs config.main config.sub config.guess
+	rm -f libtool config.log .configstatus ltmain.sh build/* Makefile
+	rm -f config.h.in autom4te.cache/*
+	rm -rf .deps build/.deps build/.libs
+	echo Done with clean ;;
+  prep)
+	./bootstrap clean
+	glibtoolize --copy
+	aclocal
+	autoheader
+	autoconf
+	automake --add-missing --copy
+	echo Done with prep ;;
+esac
+
