@@ -340,16 +340,16 @@ void httpServe() {
 	char url[128];
 	sprintf(url, "http://localhost:%u/%s", ntohs(sin.sin_port), _create_obfuscated_path());
 	
-	if ( ! fork()) {
 #ifdef OS_IS_MACOSX
+	if ( ! fork()) {
 		execlp("/usr/bin/open", "/usr/bin/open", url, NULL);
-#else
-		printf("\nPlease launch a browser on this machine and go to the URL:\n");
-		printf("   %s\n", url);
-		printf("To get your passcards for printing.\n\n");
-		printf("Waiting for browser to access URL...\n");
-#endif		
 	}
+#else
+	printf("\nPlease launch a browser on this machine and go to the URL:\n");
+	printf("   %s\n", url);
+	printf("To get your passcards for printing.\n\n");
+	printf("Waiting for browser to access URL...\n");
+#endif		
 		
 	int s;
 	FILE *f;
