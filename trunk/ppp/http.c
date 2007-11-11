@@ -273,6 +273,10 @@ int httpProcess(FILE *f) {
 
 	if (!fgets(buf, sizeof(buf), f)) return -1;
 
+	if (fVerbose) {
+		printf("[HTTP] %s\n", buf);
+	}
+
 	method = strtok(buf, " ");
 	path = strtok(NULL, " ");
 	protocol = strtok(NULL, "\r");
