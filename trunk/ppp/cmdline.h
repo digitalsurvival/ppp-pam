@@ -37,6 +37,7 @@ extern int fSkip;
 extern int fHtml;
 extern int fText;
 extern int fNext;
+extern int fAlphabet;
 extern int fName;
 extern int fCard;
 extern int fDontSkipFailures;

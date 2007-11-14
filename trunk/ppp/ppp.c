@@ -68,7 +68,9 @@ static int _key_ver = 0;
 /* Flags that permit customizing the implementation */
 static unsigned int _ppp_flags = 0;
 
-static const char * alphabet = "23456789!@#%+=:?abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPRSTUVWXYZ";
+static const char * default_alphabet = "23456789!@#%+=:?abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPRSTUVWXYZ";
+static char * alphabet = NULL;
+static int alphabetlen = 0;
 
 static unsigned long rk[RKLENGTH(KEY_BITS)];
 static int nRounds = 0;
@@ -310,6 +312,8 @@ void pppCleanup() {
 	free(d_code);
 	_zero_bytes((unsigned char *)d_buf, d_buflen);
 	free(d_buf);
+	_zero_bytes((unsigned char *)alphabet, alphabetlen);
+	free(alphabet);
 }
 
 char *mpToDecimalString(mp_int *mp, char groupChar) {
@@ -702,8 +706,42 @@ void useVersion(int v) {
 	_ppp_ver = v;
 }
 
+int cmp(const void *vp, const void *vq) {
+	const char *p = vp;
+	const char *q = vq;
+	return (*p - *q);
+}
+
+void setPasscodeAlphabet(char *a) {
+	/* sorted user-specified alphabet */
+	alphabetlen = strlen(a);
+	free(alphabet);
+	alphabet = (char *)malloc(alphabetlen+1);
+	strncpy(alphabet, a, alphabetlen+1);
+	qsort(alphabet, alphabetlen, sizeof(char), cmp);
+}
+
 void setKeyVersion(int v) {
 	_key_ver = v;
+	
+	// set alphabet based on version
+	switch (keyVersion()) {
+	case 3:
+		/* sort default alphabet */
+		alphabetlen = strlen(default_alphabet);
+		free(alphabet);
+		alphabet = (char *)malloc(alphabetlen+1);
+		strncpy(alphabet, default_alphabet, alphabetlen+1);
+		qsort(alphabet, strlen(alphabet), sizeof(char), cmp);
+		break;
+	default:
+		/* unsorted default alphabet */
+		alphabetlen = strlen(default_alphabet);
+		free(alphabet);
+		alphabet = (char *)malloc(alphabetlen+1);
+		strncpy(alphabet, default_alphabet, alphabetlen+1);
+		break;
+	}
 }
 
 int keyVersion() {

@@ -71,6 +71,7 @@ void calculateCardContainingPasscode(mp_int *passcodeNum, mp_int *cardNum);
 void getNumPrintedCodesRemaining(mp_int *mp);
 int pppVersion();
 void useVersion(int v);
+void setPasscodeAlphabet(char *a);
 void setKeyVersion(int v);
 int keyVersion();
 void pppSetFlags(unsigned int mask);

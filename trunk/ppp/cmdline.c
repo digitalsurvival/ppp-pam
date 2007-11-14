@@ -43,6 +43,7 @@ int fSkip = 0;
 int fHtml = 0;
 int fText = 0;
 int fNext = 0;
+int fAlphabet = 0;
 int fName = 0;
 int fCard = 0;
 int fDontSkipFailures = 0;
@@ -106,6 +107,9 @@ void usage() {
 		"Usage: %s [options]\n"
 		"Options:\n"
 		"  -k, --key          Generate a new sequence key and save in ~/.pppauth.\n"
+		"  -a, --alphabet <string>\n"
+		"                     Optionally used with --key to specify a character set\n"
+		"                     used for passcodes.\n"
 		// "  --time             Specify the use of time-varying passcodes.\n"
 		"  -s, --skip         Skip to --passcode or to --card specified.\n"
 		"  -h, --html         Generate html passcards for printing.\n"
@@ -231,6 +235,7 @@ void processCommandLine( int argc, char * argv[] )
 		{"html",		no_argument,		0, 'h'},
 		{"text",		no_argument,		0, 't'},
 		{"next",		no_argument,		&fNext, 1},
+		{"alphabet",	required_argument,	0, 'a'},
 		{"name",		required_argument,	0, 'm'},
 		{"card",		required_argument,	0, 'c'},
 		{"passphrase",	required_argument,	&fPassphrase, 1},
@@ -247,7 +252,7 @@ void processCommandLine( int argc, char * argv[] )
     while (1) {
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
-		c = getopt_long_only(argc, argv, "kshtm:c:p:vu:", long_options, &option_index);
+		c = getopt_long_only(argc, argv, "kshta:m:c:p:vu:", long_options, &option_index);
   
 		/* Detect the end of the options. */
 		if (c == -1)
@@ -275,6 +280,10 @@ void processCommandLine( int argc, char * argv[] )
 				break;
 			case 't':
 				fText = 1;
+				break;
+			case 'a':
+				setPasscodeAlphabet(optarg);
+				fAlphabet = 1;
 				break;
 			case 'm':
 				fName = 1;
