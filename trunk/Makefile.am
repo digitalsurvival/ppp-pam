@@ -36,40 +36,35 @@ pam_ppp_so_LDFLAGS = -bundle -Ddarwin -lc -lpam $(UUID_LIBS)
 pam_ppp_so_CFLAGS = $(MYCFLAGS) -Ddarwin -no-cpp-precomp -DPAM_DYNAMIC
 else	
 pam_ppp_so_LDFLAGS = -shared -lc -lpam $(UUID_LIBS)
-pam_ppp_so_CFLAGS = $(MYCFLAGS) -DPAM_DYNAMIC -fPIC
+pam_ppp_so_CFLAGS = $(MYCFLAGS) -DPAM_DYNAMIC
 endif
 
-TESTCMD = ./pppauth --passphrase testvectors --text --next 3 --name testvectors --card
-TESTFILTER = grep -v testvectors
+TESTCMD = ./pppauth --passphrase testvectors --text --name testvectors --card
+TESTFILTER = grep -v testvectors | grep -v ww.GRC.com
 test: pppauth
+	@cat ./$(srcdir)/ppp/testvectors.txt | $(TESTFILTER) > testvectors.txt
+	@$(TESTCMD) 1 | $(TESTFILTER) > testoutput.txt
+	@$(TESTCMD) 2 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 3 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 1234567890 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 1234567891 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 1234567892 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 65536 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 65537 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 65538 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 4294967295 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 4294967296 | $(TESTFILTER) >> testoutput.txt
+	@$(TESTCMD) 4294967297 | $(TESTFILTER) >> testoutput.txt
 	@echo Running test vectors for pppauth...
-	@cat ./$(srcdir)/ppp/testvectors-ver1.txt | $(TESTFILTER) > testvectors-ver1.txt
-	@$(TESTCMD) 1 --useVersion 1 | $(TESTFILTER) > testoutput-ver1.txt
-	@$(TESTCMD) 1234567890 --useVersion 1 | $(TESTFILTER) >> testoutput-ver1.txt
-	@$(TESTCMD) 65536 --useVersion 1 | $(TESTFILTER) >> testoutput-ver1.txt
-	@$(TESTCMD) 4294967295 --useVersion 1 | $(TESTFILTER) >> testoutput-ver1.txt
-	@$(TESTCMD) 18446744073709551615 --useVersion 1 | $(TESTFILTER) >> testoutput-ver1.txt
-	@$(TESTCMD) 79228162514264337593543950335 --useVersion 1 | $(TESTFILTER) >> testoutput-ver1.txt
-	@$(TESTCMD) 5192296858534827628530496329220095 --useVersion 1 | $(TESTFILTER) >> testoutput-ver1.txt
-	cmp testvectors-ver1.txt testoutput-ver1.txt
-	@cat ./$(srcdir)/ppp/testvectors-ver2.txt | $(TESTFILTER) > testvectors-ver2.txt
-	@$(TESTCMD) 1 --useVersion 2 | $(TESTFILTER) > testoutput-ver2.txt
-	@$(TESTCMD) 1234567890 --useVersion 2 | $(TESTFILTER) >> testoutput-ver2.txt
-	@$(TESTCMD) 65536 --useVersion 2 | $(TESTFILTER) >> testoutput-ver2.txt
-	@$(TESTCMD) 4294967295 --useVersion 2 | $(TESTFILTER) >> testoutput-ver2.txt
-	@$(TESTCMD) 18446744073709551615 --useVersion 2 | $(TESTFILTER) >> testoutput-ver2.txt
-	@$(TESTCMD) 79228162514264337593543950335 --useVersion 2 | $(TESTFILTER) >> testoutput-ver2.txt
-	@$(TESTCMD) 5192296858534827628530496329220095 --useVersion 2 | $(TESTFILTER) >> testoutput-ver2.txt
-	cmp testvectors-ver2.txt testoutput-ver2.txt
-	@echo
+	cmp testvectors.txt testoutput.txt
 	@echo Passed all test vectors.
-	@echo
 
 install-exec-local:
 if OSX
 	cp pam_ppp.so /usr/lib/pam/pam_ppp.so
-else	
-	cp pam_ppp.so /lib/security/pam_ppp.so
+else
+	mkdir -p $(DESTDIR)/lib/security/
+	cp pam_ppp.so $(DESTDIR)/lib/security/pam_ppp.so
 endif	
 
 CLEANFILES = logtab.h mpi-types.h dummy.c testvectors.txt testoutput.txt
