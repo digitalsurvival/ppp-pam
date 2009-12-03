@@ -376,7 +376,7 @@ char *currCode() {
 	mp_clear(&row);
 
 	free(d_code);
-	int length = strlen("[]") + strlen(cardstr) + 6;
+	const int length = strlen("[]") + strlen(cardstr) + 6;
 	d_code = (char *)malloc(length);
 	sprintf(d_code, "%d%c [%s]",++r, c+'A', cardstr);
 	d_code_len = length;
