@@ -110,6 +110,7 @@ static char *_gen_file_name() {
 }
 
 static void _enforce_permissions() {
+	
 	chown(_key_file_dir(), -1, 0);
 	chmod(_key_file_dir(), S_IRWXU | S_IRWXG);
 
@@ -360,6 +361,14 @@ int readKeyFile() {
 	fp = fopen(_key_file_name(), "r");
 	if ( ! fp) 
 		return 0;
+
+	/* fread can fail; then strlen used in 
+	 * _ppp_flags might not work as supposed.
+	 * It would be best to check values returned by 
+	 * fread() each time it's used.
+	 */
+	memset(buf, 0, sizeof(buf));
+
 	fread(buf, 1, sizeof(buf), fp);
 	fclose(fp);
 	ver[0] = _ppp_version(buf);
@@ -408,7 +417,6 @@ error:
 
 int writeState() {
 	FILE *fp[2];
-	char buf[128];
 
 	if ( ! _dir_exists(_key_file_dir()) )
 		return 0;
@@ -431,10 +439,13 @@ int writeState() {
 
 		_write_data(lastCardGenerated(), fp[1]);
 		fclose(fp[1]);
-		
-		memset(buf, 0, 128);
-		
+
 		return 1;
+	} else {
+		if (fp[0])
+			fclose(fp[0]);
+		if (fp[1])
+			fclose(fp[1]);
 	}
 	
 	return 0;

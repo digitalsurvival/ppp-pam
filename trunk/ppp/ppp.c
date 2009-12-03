@@ -394,7 +394,7 @@ char *currPrompt() {
 	return d_prompt;
 }
 
-int pppAuthenticate(char *attempt) {
+int pppAuthenticate(const char *attempt) {
 	int rv = 0;
 	if (strcmp(getPasscode(currPasscodeNum()), attempt) == 0) {
 		rv = 1;
@@ -534,7 +534,7 @@ void calculateCardContainingPasscode(mp_int *passcodeNum, mp_int *cardNum) {
 }
 
 
-void generateSequenceKeyFromPassphrase(char *phrase) {
+void generateSequenceKeyFromPassphrase(const char *phrase) {
 	unsigned char bytes[48];
 	
 	/* use the current ppp version */
@@ -607,7 +607,7 @@ void generateRandomSequenceKey() {
 	zeroLastCardGenerated();
 }
 
-char *getPasscode(mp_int *n) {
+char *getPasscode(const mp_int *n) {
 	unsigned int ofs = 0;
 	mp_int cipherNum, offset;
 	mp_init(&cipherNum);
@@ -711,7 +711,7 @@ int cmp(const void *vp, const void *vq) {
 	return (*p - *q);
 }
 
-void setPasscodeAlphabet(char *a) {
+void setPasscodeAlphabet(const char *a) {
 	/* sorted user-specified alphabet */
 	alphabetlen = strlen(a);
 	free(alphabet);

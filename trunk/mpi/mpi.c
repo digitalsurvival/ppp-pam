@@ -335,7 +335,7 @@ mp_err mp_init_copy(mp_int *mp, mp_int *from)
   instead). If 'from' and 'to' are identical, nothing happens.
  */
 
-mp_err mp_copy(mp_int *from, mp_int *to)
+mp_err mp_copy(const mp_int *from, mp_int *to)
 {
   ARGCHK(from != NULL && to != NULL, MP_BADARG);
 

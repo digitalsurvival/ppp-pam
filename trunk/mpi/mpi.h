@@ -87,7 +87,7 @@ mp_err mp_init(mp_int *mp);
 mp_err mp_init_array(mp_int mp[], int count);
 mp_err mp_init_size(mp_int *mp, mp_size prec);
 mp_err mp_init_copy(mp_int *mp, mp_int *from);
-mp_err mp_copy(mp_int *from, mp_int *to);
+mp_err mp_copy(const mp_int *from, mp_int *to);
 void   mp_exch(mp_int *mp1, mp_int *mp2);
 void   mp_clear(mp_int *mp);
 void   mp_clear_array(mp_int mp[], int count);
