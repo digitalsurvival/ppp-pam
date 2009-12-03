@@ -40,15 +40,18 @@ user@server $
 To enable OTP for your ssh you have to:
 1. Install the package
 2. Enable its use in /etc/pam.d
-3. Generate keys for user (and print at least one password card)
+3. Configure ssh to use PAM.
+4. Generate keys for user (and print at least one password card)
 
-Package can be installed using your distribution repository, 
+So.
+
+1) Package can be installed using your distribution repository, 
 or in classical way:
 ./configure
 make
 make install 
 
-For exemplary PAM config see pam.d/otp-config.
+2) For exemplary PAM config see pam.d/otp-config.
 
 PAM module supports following options:
 enforced - disallow logon if user doesn't have ~/.pppauth directory
@@ -58,6 +61,15 @@ secure   - disallow usage of --dontSkip option (dontSkip works bad with
            locking and can cause some security holes)
 show     - always use passcodes (ignore user options)
 noshow   - never show passcodes (ignore user options)
+
+3) In /etc/ssh/sshd_config you should have the following two lines:
+ChallengeResponseAuthentication yes
+UsePAM yes
+
+4) To generate key, and display first passcard as fast as possible (so
+you won't loose ability to login in case you're configuring OTP
+remotely) you can use:
+$ pppauth --key; pppauth --text --next 1
 
 
 == About PAM (short version) ==
