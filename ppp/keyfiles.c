@@ -198,7 +198,8 @@ static int _ppp_version(char *buf) {
 	}
 
 	buf[9] = '\x00';
-	sscanf(buf+5, "%04d", &ver);
+	if (sscanf(buf+5, "%04d", &ver) != 1)
+		return -1;
 
 	return ver;
 }
@@ -212,7 +213,8 @@ static int _data_format(char *buf) {
 	}
 
 	buf[14] = '\x00';
-	sscanf(buf+10, "%04d", &fmt);
+	if (sscanf(buf+10, "%04d", &fmt) != 1)
+		return -1;
 
 	return fmt;
 }
@@ -222,56 +224,66 @@ static int _ppp_flags(char *buf) {
 
 	if (buf[0] != ' ') {
 		/* not a versioned file */
-		pppClearFlags(0xffff);
-		return 0;
+		goto error;
 	}
 
 	if (strlen(buf+15) < 5) {
 		/* is not long enough to check for flags */
-		pppClearFlags(0xffff);
-		return 0;
+		goto error;
 	}
 
 	if (buf[19] != ' ') {
 		/* file does not contain flags */
-		pppClearFlags(0xffff);
-		return 0;
+		goto error;
 	}
 
 	buf[19] = '\x00';
-	sscanf(buf+15, "%04x", &flags);
-	pppSetFlags(PPP_FLAGS_PRESENT);
+	if (sscanf(buf+15, "%04x", &flags) != 1)
+		goto error;
 
+	pppSetFlags(PPP_FLAGS_PRESENT);
 	return flags;
+
+error:
+	pppClearFlags(0xffff);
+	return 0;
 }
 
-static void _read_data(char *buf, mp_int *mp) {
+static int _read_data(char *buf, mp_int *mp) {
+	mp_err ret;
 	switch (_data_format(buf)) {
-		case 0:
-			/* unversioned file, mpi radix 64 format */
-			mp_read_radix(mp, (unsigned char *)buf, 64);
-			break;
-		case 1:
-			/* versioned file, mpi radix 64 format */
-			/* Note:  This version should not be used.  The MPI
-			 *        library has a bug when using radix 64
-			 *        where it writes 63 as + and then assumes
-			 *        the plus is a sign indicator on read.
-			 */
-			if (pppCheckFlags(PPP_FLAGS_PRESENT))
-				mp_read_radix(mp, (unsigned char *)(buf+20), 64);
-			else
-				mp_read_radix(mp, (unsigned char *)(buf+15), 64);
-			break;
-		case 2:
-			/* versioned file, mpi radix 62 format */
-			if (pppCheckFlags(PPP_FLAGS_PRESENT))
-				mp_read_radix(mp, (unsigned char *)(buf+20), 62);
-			else
-				mp_read_radix(mp, (unsigned char *)(buf+15), 62);
-			break;
+	case 0:
+		/* unversioned file, mpi radix 64 format */
+		mp_read_radix(mp, (unsigned char *)buf, 64);
+		break;
+	case 1:
+		/* versioned file, mpi radix 64 format */
+		/* Note:  This version should not be used.  The MPI
+		 *        library has a bug when using radix 64
+		 *        where it writes 63 as + and then assumes
+		 *        the plus is a sign indicator on read.
+		 */
+		if (pppCheckFlags(PPP_FLAGS_PRESENT))
+			ret = mp_read_radix(mp, (unsigned char *)(buf+20), 64);
+		else
+			ret = mp_read_radix(mp, (unsigned char *)(buf+15), 64);
+		break;
+	case 2:
+		/* versioned file, mpi radix 62 format */
+		if (pppCheckFlags(PPP_FLAGS_PRESENT))
+			ret = mp_read_radix(mp, (unsigned char *)(buf+20), 62);
+		else
+			ret = mp_read_radix(mp, (unsigned char *)(buf+15), 62);
+		break;
+	default:
+		/* Error while determining format */
+		return 0;
 	}
 
+	if (ret == MP_OKAY)
+		return 1;
+	else 
+		return 0;
 }
 
 static void _write_data(mp_int *mp, FILE *fp) {
@@ -280,8 +292,7 @@ static void _write_data(mp_int *mp, FILE *fp) {
 	fwrite(" PPP ", 1, 5, fp);
 
 	/* write key version */
-	fprintf(fp, "%04d", keyVersion());
-	fwrite(" ", 1, 1, fp);
+	fprintf(fp, "%04d ", keyVersion());
 
 	/* Current data format is versioned file,
 	 * mpi radix 62.
@@ -289,12 +300,10 @@ static void _write_data(mp_int *mp, FILE *fp) {
 	int current_data_format = 2;
 
 	/* write data format */
-	fprintf(fp, "%04d", current_data_format);
-	fwrite(" ", 1, 1, fp);
+	fprintf(fp, "%04d ", current_data_format);
 
 	/* write flags */
-	fprintf(fp, "%04x", pppCheckFlags(0xffff));
-	fwrite(" ", 1, 1, fp);
+	fprintf(fp, "%04x ", pppCheckFlags(0xffff));
 
 	/* IMPORTANT NOTE:
 	 *
@@ -348,6 +357,7 @@ void setUser(const char *user) {
 	strncpy(userhome, "/Users/", 7);
 #endif
 #ifdef OS_IS_LINUX
+	/* FIXME - wouldn't this method work on Mac also? */
 	const struct passwd *pwent;
 	while ((pwent = getpwent()) != NULL) {
 		if (strcmp(pwent->pw_name, user) == 0) {
@@ -440,7 +450,7 @@ int isLocked() {
 
 int readKeyFile(int lock) {
 	FILE *fp;
-	char buf[128];
+	char buf[129]; /* 128 bytes + one ensured '\0' character */
 	mp_int num;
 	int ver[3];
 
@@ -453,11 +463,16 @@ int readKeyFile(int lock) {
 	if ( ! _file_exists(_gen_file_name()) )
 		return 0;
 
+
+	/*
+	 * 1. Reading key file 
+	 */
+
 	fp = fopen(_key_file_name(), "r");
 	if ( ! fp)
 		return 0;
 
-	/* If file is opened we can do authentication and there's a directory
+	/* If file is opened we can assume that there's a directory
 	 * where we can hold lock file */
 	if (lock)
 		lockingFailed = doLocking();
@@ -469,31 +484,58 @@ int readKeyFile(int lock) {
 	 */
 	memset(buf, 0, sizeof(buf));
 
-	fread(buf, 1, sizeof(buf), fp);
+	fread(buf, 1, sizeof(buf) - 1, fp);
+	buf[sizeof(buf) - 1] = '\0'; /* Ensure \0 existance so we can treat this buffer with scanf */
+
 	fclose(fp);
+
 	ver[0] = _ppp_version(buf);
+	if (ver[0] < 0)
+		goto error;
+
 	pppSetFlags(_ppp_flags(buf)); /* load flags */
 
+	/* read key */
 	mp_init(&num);
-	_read_data(buf, &num);
+	if ( ! _read_data(buf, &num))
+		goto error;
 	setSeqKey(&num);
 
+	/*
+	 * 2. Reading cnt file
+	 */
 	fp = fopen(_cnt_file_name(), "r");
 	if ( ! fp)
 		goto error;
-	fread(buf, 1, sizeof(buf), fp);
+	fread(buf, 1, sizeof(buf) - 1, fp);
+	buf[sizeof(buf) - 1] = '\0';
 	fclose(fp);
 	ver[1] = _ppp_version(buf);
-	_read_data(buf, &num);
+	if (ver[1] < 0)
+		goto error;
+
+	if ( ! _read_data(buf, &num))
+		goto error;
+
 	setCurrPasscodeNum(&num);
 
+	/*
+	 * 3. Reading gen file
+	 */
 	fp = fopen(_gen_file_name(), "r");
 	if ( ! fp)
 		goto error;
-	fread(buf, 1, sizeof(buf), fp);
-	ver[2] = _ppp_version(buf);
+	fread(buf, 1, sizeof(buf) - 1, fp);
+	buf[sizeof(buf) - 1] = '\0';
 	fclose(fp);
-	_read_data(buf, &num);
+
+	ver[2] = _ppp_version(buf);
+	if (ver[2] < 0)
+		goto error;
+
+	if ( ! _read_data(buf, &num))
+		goto error;
+
 	setLastCardGenerated(&num);
 
 	memset(buf, 0, sizeof(buf));
@@ -506,7 +548,6 @@ int readKeyFile(int lock) {
 
 	/* tell PPP code which version the key expects */
 	setKeyVersion(ver[0]);
-
 	return 1;
 
 error:

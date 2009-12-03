@@ -42,14 +42,21 @@
 
 int main( int argc, char * argv[] )
 {
+	int hasFile;
 	pppInit();
 	clInit(argv[0]);
 	printInit();
 
 	/* get user's sequence key */
-	readKeyFile(0);
-	
+	hasFile = readKeyFile(0);
+
 	processCommandLine(argc, argv);
+
+
+	if ( keyfileExists() && !hasFile && !(fKey || fPassphrase) ) {
+		errorExitWithUsage("key file exists, but is invalid. Recreate it with -k option");
+	}
+
 
 	if (fVerbose)
 		printf("Verbose output enabled.\n");
