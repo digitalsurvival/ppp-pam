@@ -82,7 +82,7 @@ int main( int argc, char * argv[] )
 		 * substantially.
 		 */
 		// writeKeyFile();
-	}                     
+	}
 	
 	if (fVerbose) {
 		printf("%s key: ", (fPassphrase ? "Temporary" : "User"));
@@ -96,7 +96,7 @@ int main( int argc, char * argv[] )
 			mp_clear(&mp);
 		}
 	}
-	    
+
 	mp_int n;
 	mp_init(&n);
 	mp_zero(&n);

@@ -166,10 +166,10 @@ static char *_extract_passcode_from_block(mp_int *cipherBlock, int n) {
 
 	int i = n * 3;
 	
-    d_passcode[0] = alphabet[(int)(cipherdata[i]&0x3f)];
-    d_passcode[1] = alphabet[(int)(((cipherdata[i]&0xc0)>>6) + ((cipherdata[i+1]&0x0f)<<2))];
-    d_passcode[2] = alphabet[(int)(((cipherdata[i+1]&0xf0)>>4) + ((cipherdata[i+2]&0x03)<<4))];
-    d_passcode[3] = alphabet[(int)((cipherdata[i+2]&0xfc)>>2)];
+	d_passcode[0] = alphabet[(int)(cipherdata[i]&0x3f)];
+	d_passcode[1] = alphabet[(int)(((cipherdata[i]&0xc0)>>6) + ((cipherdata[i+1]&0x0f)<<2))];
+	d_passcode[2] = alphabet[(int)(((cipherdata[i+1]&0xf0)>>4) + ((cipherdata[i+2]&0x03)<<4))];
+	d_passcode[3] = alphabet[(int)((cipherdata[i+2]&0xfc)>>2)];
 	d_passcode[4] = '\x00';
 	
 	_zero_bytes(cipherdata, 16*3);
@@ -211,7 +211,7 @@ static void _compute_passcode_block(mp_int *cipherNum, mp_int *cipherBlock) {
 	}
 
 	/* get encryption key from sequence key (32 MSBs) */
-    mp_int key;
+	mp_int key;
 	mp_init(&key);
 	mp_read_unsigned_bin(&key, kp, 32);
 
@@ -327,7 +327,7 @@ char *mpToDecimalString(mp_int *mp, char groupChar) {
 	mp_toradix(mp, (unsigned char *)d_buf, 10);
 
 	len = strlen(d_buf);
-           
+
 	if (groupChar) {
 		int nGroups = len / 3;
 		int firstGroupLen = len % 3;
@@ -337,7 +337,6 @@ char *mpToDecimalString(mp_int *mp, char groupChar) {
 		}
 	}
 	
-	               
 	if (nCommas > 0) {
 		int i, pos;
 		int offset = nCommas;
@@ -362,7 +361,7 @@ char *currCode() {
 
 	mp_init(&mp);
 	mp_init(&row);
-                                
+
 	calculateCardContainingPasscode(currPasscodeNum(), &mp);
 	mp_add_d(&mp, 1, &mp);
 	char *cardstr = mpToDecimalString(&mp, ',');
@@ -542,7 +541,7 @@ void generateSequenceKeyFromPassphrase(char *phrase) {
 	setKeyVersion(pppVersion());
 	
 	switch (keyVersion()) {
-   	case 1:
+	case 1:
 		sha384((const unsigned char *)phrase, strlen(phrase), bytes);
 		_reverse_bytes(bytes, 48);
 		_bytes_to_mp(bytes, &d_seqKey, 48);
@@ -584,7 +583,7 @@ void generateRandomSequenceKey() {
 	setKeyVersion(pppVersion());
 	
 	switch (keyVersion()) {
-   	case 1:
+  	case 1:
 		sha384(entropy, 32, bytes);
 		_zero_bytes(entropy, 32);
 		_reverse_bytes(bytes, 48);
@@ -627,7 +626,7 @@ char *getPasscode(mp_int *n) {
 
 	_locate_passcode(&N, &cipherNum, &offset);
 	mp_clear(&N);
-           
+
 	/* Get ciphertext block (cipher N, N+1, N+2) 
 	 */
 	mp_int cipherBlock;
