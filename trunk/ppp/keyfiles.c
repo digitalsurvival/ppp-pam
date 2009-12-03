@@ -319,7 +319,7 @@ static int confirm(char *prompt) {
 	return 1;
 }
 
-void setUser(char *user) {
+void setUser(const char *user) {
 #ifdef OS_IS_MACOSX	
 	strncpy(userhome, "/Users/", 7);
 #endif

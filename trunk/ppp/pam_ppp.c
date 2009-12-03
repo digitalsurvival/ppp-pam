@@ -57,40 +57,40 @@
 
 PAM_EXTERN
 int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv) {
-    int retval;
-    const char *user=NULL;
+	int retval;
+	const char *user=NULL;
 
-    /*
-     * authentication requires we know who the user wants to be
-     */
-    retval = pam_get_user(pamh, &user, NULL);
-    if (retval != PAM_SUCCESS) {
+	/*
+	 * authentication requires we know who the user wants to be
+	 */
+	retval = pam_get_user(pamh, &user, NULL);
+	if (retval != PAM_SUCCESS) {
 		D(("get user returned error: %s", pam_strerror(pamh,retval)));
 		return retval;
-    }
-    if (user == NULL || *user == '\0') {
+	}
+	if (user == NULL || *user == '\0') {
 		D(("username not known"));
 		pam_set_item(pamh, PAM_USER, (const void *) DEFAULT_USER);
-    }
+	}
 
 	retval = PAM_AUTH_ERR;
 	
 	pppInit();
 	
-	setUser((char *)user);
+	setUser(user);
 	if ( ! readKeyFile()) {
 		retval = PAM_IGNORE;
 		goto cleanup;
 	}
 	
-    struct pam_conv *conversation;
-    struct pam_message message;
-    struct pam_message *pmessage = &message;
-    struct pam_response *resp = NULL;
+	struct pam_conv *conversation;
+	struct pam_message message;
+	struct pam_message *pmessage = &message;
+	struct pam_response *resp = NULL;
 	if (pppCheckFlags(PPP_SHOW_PASSCODE)) {
-	    message.msg_style = PAM_PROMPT_ECHO_ON;
+		message.msg_style = PAM_PROMPT_ECHO_ON;
 	} else {
-    	message.msg_style = PAM_PROMPT_ECHO_OFF;
+		message.msg_style = PAM_PROMPT_ECHO_OFF;
 	}
 	message.msg = currPrompt();
 	
@@ -109,12 +109,12 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
 cleanup:
 	pppCleanup();
 
-    return retval;
+	return retval;
 }
 
 PAM_EXTERN
 int pam_sm_setcred(pam_handle_t *pamh,int flags,int argc,const char **argv) {
-     return PAM_IGNORE;
+	 return PAM_IGNORE;
 }
 
 
@@ -179,13 +179,13 @@ int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, const char **ar
 /* static module data */
 
 struct pam_module _pam_permit_modstruct = {
-    "pam_ppp",
-    pam_sm_authenticate,
-    pam_sm_setcred,
-    NULL,
-    pam_sm_open_session,
-    pam_sm_close_session,
-    NULL
+	"pam_ppp",
+	pam_sm_authenticate,
+	pam_sm_setcred,
+	NULL,
+	pam_sm_open_session,
+	pam_sm_close_session,
+	NULL
 };
 
 #endif
