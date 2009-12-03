@@ -28,6 +28,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -53,8 +54,13 @@ int lockingFailed = 0;
 
 static char *_home_dir() {
 	static struct passwd *pwdata = NULL;
+	const char *env;
 
 	if (strlen(userhome) == 0) {
+		env = getenv("HOME");
+		if (env) {
+			return env;
+		}
 		/* get home dir for logged-in user */
 		if (pwdata == NULL) {
 			uid_t uid = geteuid();

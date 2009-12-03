@@ -223,7 +223,7 @@ int main( int argc, char * argv[] )
 	
 	/* display any warnings */
 	char buffer[2048];
-	if (!fKey && !fPassphrase && !fLatex) {
+	if (!fKey && !fPassphrase && !fLatex && !fPasscodeCurr) {
 		while (pppWarning(buffer, 2048)) {
 			if (strlen(buffer)) {
 				fprintf(stderr, "%s\n", buffer);
