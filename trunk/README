@@ -1,0 +1,117 @@
+= Intro =
+PPP-PAM is a pam module and a user utility for
+One-Time Password (OTP) secure authentication.
+
+== Installation ==
+To enable OTP for your ssh you have to:
+1. Install the package
+2. Enable its use in /etc/pam.d
+3. Generate keys for user (and print at least one password card)
+
+Package can be installed using your distribution repository, 
+or in classical way:
+./configure
+make
+make install 
+
+== About PAM (short version) ==
+Most application which require password input check
+the password using PAM. I'll stick to the sshd as an example.
+
+SSH when user logs in tries to authenticate him using it's own
+method - keys. Then, if this method fails it talks with PAM.
+PAM to see how to authenticate sshd reads /etc/pam.d/sshd.
+
+In default Gentoo installation it will contain following lines:
+auth       include        system-remote-login
+account    include        system-remote-login
+password   include        system-remote-login
+session           include        system-remote-login
+
+This is line-oriented file in which each line tells us what to do.
+We're interested in "auth" part only, which - includes configuration
+from system-remote-login, which looks like this:
+auth            include         system-login
+
+And, as you can see, it just reads configuration from yet another file:
+auth            required        pam_tally.so onerr=succeed
+auth            required        pam_shells.so
+auth            required        pam_nologin.so
+auth            include         system-auth
+(account, password, session omitted)
+
+One more file (system-auth) to look into:
+auth            required        pam_env.so
+auth            required        pam_unix.so try_first_pass likeauth nullok
+
+
+PAM when authenticating user will read the lines from top to bottom.
+pam_tally - reads failures and can do some action according to them
+pam_shells - checks if user has a valid shell (listed in /etc/shells)
+pam_nologin - checks if logins were disabled (shows message)
+pam_env - does something with environment
+and finally:
+pam_unix - checks password according to /etc/shadow
+
+This is default schema and somewhere there we ought to add our OTP.
+
+Easiest approach just modifies the first file: sshd. After all auth
+entries we just add our pam_ppp module. File would look like:
+
+auth            include         system-remote-login
+# Line added for OTP:
+auth            required        pam_ppp.so
+
+account    include        system-remote-login
+password   include        system-remote-login
+session           include        system-remote-login
+
+This will ask us for OTP after we are asked for our normal unix password
+regardless if the unix password was correct or not. This can lead to Denial
+of Service behaviour when attacker tries to login enough times to use up all
+our printed passcards. If we have some other security mechanism (like 
+sshguard - which blocks sshd port for people who try the dictionary attacks)
+it might be perfectly ok. 
+
+If not, we can change the line with pam_unix.so module from:
+auth            required        pam_unix.so try_first_pass likeauth nullok
+To:
+auth            requisite       pam_unix.so try_first_pass likeauth nullok
+
+Which will require correct unix password before asking OTP at all. If
+we don't like to mess with global pam config files (system-auth etc.)
+we can move all auth lines to sshd file, change this one line and add 
+pam_ppp line, which results in following configuration:
+
+# Include commented out:
+#auth       include        system-remote-login
+# All auths included in sshd:
+auth            required        pam_tally.so onerr=succeed
+auth            required        pam_shells.so
+auth            required        pam_nologin.so
+auth            required        pam_env.so
+auth            requisite       pam_unix.so try_first_pass likeauth nullok
+# Our line:
+auth            required        pam_ppp.so
+
+#Rest
+account    include        system-remote-login
+password   include        system-remote-login
+session           include        system-remote-login
+
+== Generating key ==
+Typing as user the following command:
+$ pppauth -k 
+Will create ~/.pppauth directory, generate key
+and enable OTP for user.
+
+After generating key it's important to print yourself
+a card of passwords:
+$ pppauth -t -c 1
+Copy/paste/print (or use pppauth -t -c 1 | lp) Or...
+$ pppauth -h -c 1
+And use your browser to print a card
+Or:
+$ pppauth -l -c 1 > file.latex
+$ pdflatex file.latex
+And then print file.pdf containing 6 cards.

@@ -122,7 +122,7 @@ pam_ppp_so_SOURCES = ./$(srcdir)/ppp/pam_ppp.c $(PPPSRC) $(MPISRC)
 @OSX_TRUE@pam_ppp_so_LDFLAGS = -bundle -Ddarwin -lc -lpam $(UUID_LIBS)
 @OSX_FALSE@pam_ppp_so_LDFLAGS = -shared -lc -lpam $(UUID_LIBS)
 @OSX_TRUE@pam_ppp_so_CFLAGS = $(MYCFLAGS) -Ddarwin -no-cpp-precomp -DPAM_DYNAMIC
-@OSX_FALSE@pam_ppp_so_CFLAGS = $(MYCFLAGS) -DPAM_DYNAMIC
+@OSX_FALSE@pam_ppp_so_CFLAGS = $(MYCFLAGS) -DPAM_DYNAMIC -fPIC
 
 TESTCMD = ./pppauth --passphrase testvectors --text --name testvectors --card
 TESTFILTER = grep -v testvectors | grep -v ww.GRC.com

@@ -127,6 +127,8 @@ void usage() {
 		"                     Where: NNNN is the decimal integer passcard number, C is\n"
 		"                     the column (A through G), and RR is the row (1 through 10).\n"
 		"                     Square brackets around NNNN and comma separators are optional.\n"
+		"                     You can also specify \"current\" to get the next passcode\n"
+		"                     which will be used for authentication.\n"
 		"  --passphrase <phrase>\n"
 		"                     Use the specified <phrase> to create a temporary key for\n"
 		"                     testing purposes only.  This temporary key is not saved\n"
