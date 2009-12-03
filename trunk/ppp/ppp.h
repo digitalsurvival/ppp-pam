@@ -55,6 +55,7 @@ int pppWarning(char *buf, int size);
 mp_int *seqKey();
 void setSeqKey(mp_int *mp);
 mp_int *currPasscodeNum();
+mp_int *currAuthPasscodeNum();
 void setCurrPasscodeNum(const mp_int *mp);
 void zeroCurrPasscodeNum();
 void incrCurrPasscodeNum();
