@@ -83,6 +83,9 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **ar
 		goto cleanup;
 	}
 	
+	/* Reserve the passcode the user will have to type */
+	reservePasscodeNum();
+	
 	struct pam_conv *conversation;
 	struct pam_message message;
 	struct pam_message *pmessage = &message;
