@@ -51,6 +51,7 @@ int fDontSkipFailures = 0;
 int fShowPasscode = 0;
 int fPassphrase = 0;
 int fPasscode = 0;
+int fPasscodeCurr = 0;
 int fVerbose = 0;
 int fUseVersion = 0;
 int numCards = 0;
@@ -304,19 +305,24 @@ void processCommandLine(int argc, char *argv[]) {
 			case 'p':
 				fPasscode = 1;
 				i = j = 0;
-				while( optarg[i] != '\x00' ) {
-					switch( optarg[i] ) {
+				if (strcmp(optarg, "current") == 0) {
+					fPasscodeCurr = 1;
+				} else {
+					fPasscodeCurr = 0;
+					while( optarg[i] != '\x00' ) {
+						switch( optarg[i] ) {
 						case ',' : 
 						case '[' :
 						case ']' :
 						case ' ' :
 							i++;
-							break;
+						break;
 						default:
 							passcode[j++] = optarg[i++];
 							break;
+						}
+						passcode[j] = '\x00';
 					}
-					passcode[j] = '\x00';
 				}
 				break;
 			case 'v':
@@ -420,7 +426,7 @@ void processCommandLine(int argc, char *argv[]) {
 		errorExitWithUsage("must create a sequence key with `--key' or use a `--passphrase'");
 	}
 
-	if (fPasscode) {
+	if (fPasscode && !fPasscodeCurr) {
 		if (validPasscode(passcode, strlen(passcode)) == 0) {
 			errorExitWithUsage("invalid passcode specified");
 		}

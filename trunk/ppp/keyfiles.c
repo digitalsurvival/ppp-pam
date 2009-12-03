@@ -137,7 +137,7 @@ static void _enforce_permissions() {
 	chown(_gen_file_name(), -1, 0);
 	chmod(_gen_file_name(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
 
-	chown(_lock_file_name(), -1, 0);
+	chown(_lock_file_name(), -1, 0); /* FIXME: user will be root unless we create this file with pppauth */
 	chmod(_lock_file_name(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
 }
 
