@@ -143,12 +143,7 @@ static void _mp_to_uint(mp_int *mp, unsigned int *i) {
 	v.val = 0;
 }
 
-static void _zero_bytes(unsigned char *buf, int len) {
-	int i;
-	for (i=0; i<len; i++) {
-		buf[i] = '\x00';
-	}
-}
+#define _zero_bytes(buf, size) memset(buf, 0, size)
 
 static void _zero_rijndael_state() {
 	int i;
@@ -392,6 +387,7 @@ char *currCode() {
 
 char *currPrompt() {
 	int length = strlen("Passcode : ") + strlen(currCode()) + 6 + 4;
+	/* Warn about some locking issues */
 	if (lockingFailed)
 		length += strlen("(no lock) ");
 	free(d_prompt);
