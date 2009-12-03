@@ -339,8 +339,6 @@ int readKeyFile() {
 	mp_int num;
 	int ver[3];
 	
-	mp_init(&num);
-	
 	if ( ! _file_exists(_key_file_name()) )
 		return 0;
 
@@ -353,17 +351,19 @@ int readKeyFile() {
 	fp = fopen(_key_file_name(), "r");
 	if ( ! fp) 
 		return 0;
-	fread(buf, 1, 128, fp);
+	fread(buf, 1, sizeof(buf), fp);
 	fclose(fp);
 	ver[0] = _ppp_version(buf);
 	pppSetFlags(_ppp_flags(buf)); /* load flags */
+	
+	mp_init(&num);
 	_read_data(buf, &num);
 	setSeqKey(&num);
 
 	fp = fopen(_cnt_file_name(), "r");
 	if ( ! fp) 
-		return 0;
-	fread(buf, 1, 128, fp);
+		goto error;
+	fread(buf, 1, sizeof(buf), fp);
 	fclose(fp);
 	ver[1] = _ppp_version(buf);
 	_read_data(buf, &num);
@@ -371,25 +371,30 @@ int readKeyFile() {
 
 	fp = fopen(_gen_file_name(), "r");
 	if ( ! fp) 
-		return 0;
-	fread(buf, 1, 128, fp);
+		goto error;
+	fread(buf, 1, sizeof(buf), fp);
 	ver[2] = _ppp_version(buf);
 	fclose(fp);
 	_read_data(buf, &num);
 	setLastCardGenerated(&num);
 
-	memset(buf, 0, 128);
+	memset(buf, 0, sizeof(buf));
 	mp_clear(&num);
 	
 	if ( (ver[0] != ver[1]) || (ver[1] != ver[2]) ) {
 		/* Inconsistency in PPP version among the three data files */
-		return 0;
+		goto error;
 	}
 
 	/* tell PPP code which version the key expects */
 	setKeyVersion(ver[0]);
 
 	return 1;
+
+error:
+	memset(buf, 0, sizeof(buf));
+	mp_clear(&num);
+	return 0;
 }
     
 int writeState() {

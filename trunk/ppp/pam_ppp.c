@@ -79,8 +79,8 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
 	
 	setUser((char *)user);
 	if ( ! readKeyFile()) {
-		user = NULL;
-		return PAM_IGNORE;
+		retval = PAM_IGNORE;
+		goto cleanup;
 	}
 	
     struct pam_conv *conversation;
@@ -105,8 +105,8 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
 			retval = PAM_SUCCESS;
 		_pam_drop_reply(resp, 1);
 	}
-			
-    user = NULL;	/* clean up */
+
+cleanup:
 	pppCleanup();
 
     return retval;
