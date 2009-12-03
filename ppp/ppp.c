@@ -391,10 +391,15 @@ char *currCode() {
 }
 
 char *currPrompt() {
+	int length = strlen("Passcode : ") + strlen(currCode()) + 6 + 4;
+	if (lockingFailed) 
+		length += strlen("(no lock) ");
 	free(d_prompt);
-	d_prompt = (char *)malloc(strlen("Passcode : ") + strlen(currCode()) + 6);
-	sprintf(d_prompt, "Passcode %s: ", currCode());
-
+	d_prompt = (char *)malloc(length);
+	if (lockingFailed)
+		sprintf(d_prompt, "Passcode %s: ", currCode());
+	else
+		sprintf(d_prompt, "(no lock) Passcode %s: ", currCode());
 	return d_prompt;
 }
 
@@ -419,6 +424,8 @@ int pppAuthenticate(const char *attempt) {
 		} else {
 			if (d_reserved) {
 				/* Was reserved, but failed and should be decreased... */
+				/* FIXME: This shouldn't really be used because it causes a security
+				 * bug similar to not using reservation at all. */
 				decrCurrPasscodeNum();
 				writeState();
 			}

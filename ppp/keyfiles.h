@@ -31,10 +31,16 @@
 
 #include "ppp.h"
 
+/* Locking failed in current approach */
+extern int lockingFailed;
+
 void setUser(const char *user);
 int keyfileExists();
 int writeKeyFile();
 int writeState();
-int readKeyFile();
+int readKeyFile(int lock);
 
+int doLocking();
+int doUnlocking();
+int isLocked();
 #endif

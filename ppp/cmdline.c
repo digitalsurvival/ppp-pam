@@ -388,6 +388,9 @@ void processCommandLine(int argc, char *argv[]) {
 	fTime = 0;
 	
 	/* validate the command line options */
+	if (fDontSkipFailures) {
+		errorExit("--dontSkip disabled because of security issue 22 (see code.google.com/p/ppp-pam)");
+	}
 
 	if ( ! (fKey | fSkip | fHtml | fLatex | fText | fTime) ) {
 		errorExitWithUsage("nothing to do!");

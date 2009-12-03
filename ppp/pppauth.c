@@ -47,7 +47,7 @@ int main( int argc, char * argv[] )
 	printInit();
 
 	/* get user's sequence key */
-	readKeyFile();
+	readKeyFile(0);
 	
 	processCommandLine(argc, argv);
 

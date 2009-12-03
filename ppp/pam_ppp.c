@@ -54,7 +54,6 @@
 #endif	
 
 /* --- authentication management functions --- */
-
 PAM_EXTERN
 int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv) {
 	int retval;
@@ -68,6 +67,7 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **ar
 		D(("get user returned error: %s", pam_strerror(pamh,retval)));
 		return retval;
 	}
+
 	if (user == NULL || *user == '\0') {
 		D(("username not known"));
 		pam_set_item(pamh, PAM_USER, (const void *) DEFAULT_USER);
@@ -78,13 +78,21 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **ar
 	pppInit();
 	
 	setUser(user);
-	if ( ! readKeyFile()) {
+	if ( ! readKeyFile(1)) { /* Read key, and put a lock on it */
 		retval = PAM_IGNORE;
 		goto cleanup;
+	}
+
+	if (!isLocked()) {
+		D(("unable to lock file! Race condition possible."));
 	}
 	
 	/* Reserve the passcode the user will have to type */
 	reservePasscodeNum();
+
+	/* We have reserved Passcode and saved new file data
+	 * release the locks */
+	doUnlocking();
 	
 	struct pam_conv *conversation;
 	struct pam_message message;
@@ -150,7 +158,7 @@ int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, const char **ar
 	
 	pppInit();
 	setUser((char *)user);
-	if ( ! readKeyFile()) {
+	if ( ! readKeyFile(0)) {
 		user = NULL;
 		/* TODO return a more appropriate error here */
 		return PAM_USER_UNKNOWN;
