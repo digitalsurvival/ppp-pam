@@ -130,7 +130,6 @@ static char *_gen_file_name() {
 
 
 static void _enforce_permissions() {
-
 	chown(_key_file_dir(), -1, 0);
 	chmod(_key_file_dir(), S_IRWXU | S_IRWXG);
 
@@ -255,7 +254,7 @@ static int _read_data(char *buf, mp_int *mp) {
 	case 0:
 		/* unversioned file, mpi radix 64 format */
 		mp_read_radix(mp, (unsigned char *)buf, 64);
-		break;
+		return 1;
 	case 1:
 		/* versioned file, mpi radix 64 format */
 		/* Note:  This version should not be used.  The MPI

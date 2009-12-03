@@ -143,7 +143,7 @@ static void _mp_to_uint(mp_int *mp, unsigned int *i) {
 	v.val = 0;
 }
 
-#define _zero_bytes(buf, size) memset(buf, 0, size)
+#define _zero_bytes(_buf, _size) memset(_buf, 0, _size)
 
 static void _zero_rijndael_state() {
 	int i;
@@ -376,8 +376,10 @@ char *currCode() {
 	mp_clear(&row);
 
 	free(d_code);
-	d_code = (char *)malloc(strlen("[]") + strlen(cardstr) + 6);
+	int length = strlen("[]") + strlen(cardstr) + 6;
+	d_code = (char *)malloc(length);
 	sprintf(d_code, "%d%c [%s]",++r, c+'A', cardstr);
+	d_code_len = length;
 
 	mp_clear(&row);
 	c = r = 0;
@@ -396,6 +398,7 @@ char *currPrompt() {
 		sprintf(d_prompt, "(no lock) Passcode %s: ", currCode());
 	else
 		sprintf(d_prompt, "Passcode %s: ", currCode());
+	d_prompt_len = length;
 	return d_prompt;
 }
 
@@ -613,42 +616,77 @@ void generateSequenceKeyFromPassphrase(const char *phrase) {
 	zeroLastCardGenerated();
 }
 
+int progressRead(const char *device, const char *msg, unsigned char *buf, const int count)
+{
+	const char spinner[] = "|/-\\"; // ".oO0Oo. ";
+	const int size = strlen(spinner);
+	int i;
+	FILE *f;
+	f = fopen(device, "r");
+	if (!f) {
+		return 0;
+	}
+
+	puts(
+		"Hint: Move your mouse, cause some disc activity\n"
+		"or type on keyboard to make the progress faster.\n");
+
+	for (i=0; i<count; i++) {
+		buf[i] = fgetc(f);
+		if (msg && i%11 == 0) {
+			printf("\r%s %3d%%  %c ", msg, i*100 / count, spinner[i/11 % size]);
+			fflush(stdout);
+		}
+	}
+	fclose(f);
+	if (msg)
+		printf("\r%s OK!       \n", msg);
+	return 1; // Success;
+}
+
 void generateRandomSequenceKey() {
 	int i;
 	uuid_t uuid;
-	unsigned char entropy[32];
+	unsigned char entropyPool[256];
+	int entropyLen = 0;
 	unsigned char bytes[48];
 
-	uuid_generate_time(uuid);
-	for (i=0; i<16; i++) {
-		entropy[i] = uuid[i];
-	}
+	if ( ! progressRead("/dev/random", "Gathering entropy...", entropyPool, 256)) {
+		perror("Unable to open /dev/random");
+		printf("Trying /dev/urandom device (not as good as /dev/random!)...\n");
+		if ( ! progressRead("/dev/urandom", "Gathering entropy...", entropyPool, 256)) {
+			printf("Falling back to UUIDs (even less random!)\n");
 
-	uuid_generate_random(uuid);
-	for (i=0; i<16; i++) {
-		entropy[i+16] = uuid[i];
+			for (i=0; i<16; i++) {
+				uuid_generate_random(uuid);
+				memcpy(entropyPool + 16 * i, (unsigned char *) &uuid, sizeof(uuid));
+			}
+		}
 	}
+	entropyLen = 256;
 
 	/* use the current ppp version */
 	setKeyVersion(pppVersion());
 
 	switch (keyVersion()) {
 	case 1:
-		sha384(entropy, 32, bytes);
-		_zero_bytes(entropy, 32);
+		sha384(entropyPool, entropyLen, bytes);
+		_zero_bytes(entropyPool, entropyLen);
 		_reverse_bytes(bytes, 48);
 		_bytes_to_mp(bytes, &d_seqKey, 48);
 		_zero_bytes(bytes, 48);
 		break;
 	case 2:
-		sha256(entropy, 32, bytes);
-		_zero_bytes(entropy, 32);
+		sha256(entropyPool, entropyLen, bytes);
+		_zero_bytes(entropyPool, entropyLen);
 		_reverse_bytes(bytes, 32);
 		_bytes_to_mp(bytes, &d_seqKey, 32);
 		_zero_bytes(bytes, 32);
 	break;
 	default:
 		/* unsupported */
+		printf("Strange error; unsupported ppp version\n");
+		exit(-1);
 		break;
 	}
 
