@@ -37,6 +37,7 @@
 #include "mpi.h"
 #include "sha2.h"
 #include "print.h"
+#include "latex.h"
 #include "http.h"
 
 int main( int argc, char * argv[] )
@@ -170,7 +171,7 @@ int main( int argc, char * argv[] )
 	}
 	
 	/* Print cards or individual passcode */
-	if (fText) {
+	if (fText || fLatex) {
 		if (fNext) {
 			int i;
 			for (i=0; i<numCards; i++) {
@@ -178,14 +179,20 @@ int main( int argc, char * argv[] )
 				mp_init(&mp);
 				if ( ! fPassphrase ) {
 					mp_add_d(lastCardGenerated(), 1, &mp);
-					printCard(&mp);
+					if (fLatex)
+						latexCard(&mp);
+					else
+						printCard(&mp);
 					/* Keep track of last card printed with --next if 
 					 * user's key was used.
 					 */
 					incrLastCardGenerated();
 					writeState();
 				} else {
-					printCard(&cardNum);
+					if (fLatex)
+						latexCard(&cardNum);
+					else
+						printCard(&cardNum);
 				}
 				mp_add_d(&cardNum, 1, &cardNum);
 				mp_clear(&mp);
@@ -194,7 +201,10 @@ int main( int argc, char * argv[] )
 			if (fPasscode) {
 				printf("%s\n", getPasscode(&n));
 			} else {
-				printCard(&cardNum);
+				if (fLatex)
+					latexCard(&cardNum);
+				else
+					printCard(&cardNum);
 			}
 		}
 	}
@@ -209,7 +219,7 @@ int main( int argc, char * argv[] )
 	
 	/* display any warnings */
 	char buffer[2048];
-	if (!fKey && !fPassphrase) {
+	if (!fKey && !fPassphrase && !fLatex) {
 		while (pppWarning(buffer, 2048)) {
 			if (strlen(buffer)) {
 				fprintf(stderr, "%s\n", buffer);

@@ -24,6 +24,7 @@ bin_PROGRAMS = pppauth
 pppauth_SOURCES = \
 	./$(srcdir)/ppp/pppauth.c ./$(srcdir)/ppp/cmdline.h ./$(srcdir)/ppp/cmdline.c \
 	./$(srcdir)/ppp/print.h ./$(srcdir)/ppp/print.c ./$(srcdir)/ppp/http.h ./$(srcdir)/ppp/http.c \
+	./$(srcdir)/ppp/latex.h ./$(srcdir)/ppp/latex.c \
 	$(PPPSRC) $(MPISRC)
 pppauth_LDADD = $(UUID_LIBS)
 pppauth_CFLAGS = $(MYCFLAGS)
