@@ -59,6 +59,17 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **ar
 	int retval;
 	const char *user=NULL;
 
+	const char enforced_msg[] = "OTP not configured, unable to login";
+
+	/* Required for communication with user */
+	struct pam_conv *conversation;
+	struct pam_message message;
+	struct pam_message *pmessage = &message;
+	struct pam_response *resp = NULL;
+
+	/* Initialize conversation function */
+	pam_get_item(pamh, PAM_CONV, (const void **)&conversation);
+
 	/* Module options */
 
 	/* Enforced makes any user without a .pppauth dir
@@ -111,6 +122,17 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **ar
 		/* If not enforcing - ignore, otherwise - fail */
 		if (enforced == 0)
 			retval = PAM_IGNORE;
+		else if (!(flags & PAM_SILENT)) {
+			/* Tell why */
+			message.msg_style = PAM_TEXT_INFO;
+			message.msg = enforced_msg;
+			conversation->conv(1, 
+				(const struct pam_message**)&pmessage,
+				&resp, conversation->appdata_ptr);
+			if (resp)
+				_pam_drop_reply(resp, 1);
+		}
+
 		goto cleanup;
 	}
 
@@ -136,11 +158,6 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **ar
 	if (lock)
 		doUnlocking();
 	
-	struct pam_conv *conversation;
-	struct pam_message message;
-	struct pam_message *pmessage = &message;
-	struct pam_response *resp = NULL;
-
 	/* Echo on if enforced by "show" option or enabled by user
 	 * and not disabled by "noshow" option */
 	if ((show == 2) || (show == 1 && pppCheckFlags(PPP_SHOW_PASSCODE))) {
@@ -150,8 +167,6 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **ar
 	}
 	message.msg = currPrompt();
 	
-	/* Use conversation function to prompt user for passcode */
-	pam_get_item(pamh, PAM_CONV, (const void **)&conversation);
 	conversation->conv(1, (const struct pam_message **)&pmessage,
 			&resp, conversation->appdata_ptr);
 	

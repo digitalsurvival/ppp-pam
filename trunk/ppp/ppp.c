@@ -397,9 +397,9 @@ char *currPrompt() {
 	free(d_prompt);
 	d_prompt = (char *)malloc(length);
 	if (lockingFailed)
-		sprintf(d_prompt, "Passcode %s: ", currCode());
-	else
 		sprintf(d_prompt, "(no lock) Passcode %s: ", currCode());
+	else
+		sprintf(d_prompt, "Passcode %s: ", currCode());
 	return d_prompt;
 }
 

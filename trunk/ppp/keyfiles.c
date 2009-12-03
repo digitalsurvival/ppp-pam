@@ -421,6 +421,7 @@ int doUnlocking() {
 
 	if (fcntl(lock_fd, F_SETLK, &fl) != 0) {
 		/* Strange error while releasing the lock */
+		close(lock_fd), lock_fd = -1;
 		return 2;
 	}
 
