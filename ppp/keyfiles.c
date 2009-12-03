@@ -130,20 +130,31 @@ static char *_gen_file_name() {
 
 
 static void _enforce_permissions() {
-	chown(_key_file_dir(), -1, 0);
-	chmod(_key_file_dir(), S_IRWXU | S_IRWXG);
-
+	/* On some systems there might be more users
+	 * in root group without a real root access.
+	 * Changing this group here might give them access
+	 * to our files, while changing group to root
+	 * shouldn't be really required for PAM functionality...
+	 */
+/*	chown(_key_file_dir(), -1, 0);
 	chown(_key_file_name(), -1, 0);
-	chmod(_key_file_name(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
-
 	chown(_cnt_file_name(), -1, 0);
-	chmod(_cnt_file_name(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
-
 	chown(_gen_file_name(), -1, 0);
-	chmod(_gen_file_name(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+	// FIXME: user will be root unless we create this file with pppauth
+	chown(_lock_file_name(), -1, 0);
 
-	chown(_lock_file_name(), -1, 0); /* FIXME: user will be root unless we create this file with pppauth */
+	chmod(_key_file_dir(), S_IRWXU | S_IRWXG);
+	chmod(_key_file_name(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+	chmod(_cnt_file_name(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+	chmod(_gen_file_name(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
 	chmod(_lock_file_name(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+*/
+
+	chmod(_key_file_dir(), S_IRWXU);
+	chmod(_key_file_name(), S_IRUSR|S_IWUSR);
+	chmod(_cnt_file_name(), S_IRUSR|S_IWUSR);
+	chmod(_gen_file_name(), S_IRUSR|S_IWUSR);
+	chmod(_lock_file_name(), S_IRUSR|S_IWUSR);
 }
 
 static int _file_exists(char *fname) {
@@ -281,7 +292,7 @@ static int _read_data(char *buf, mp_int *mp) {
 
 	if (ret == MP_OKAY)
 		return 1;
-	else 
+	else
 		return 0;
 }
 
@@ -464,7 +475,7 @@ int readKeyFile(int lock) {
 
 
 	/*
-	 * 1. Reading key file 
+	 * 1. Reading key file
 	 */
 
 	fp = fopen(_key_file_name(), "r");
