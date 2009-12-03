@@ -324,7 +324,16 @@ void setUser(const char *user) {
 	strncpy(userhome, "/Users/", 7);
 #endif
 #ifdef OS_IS_LINUX	
-	strncpy(userhome, "/home/", 6);
+	const struct passwd *pwent;
+	while ((pwent = getpwent()) != NULL) {
+		if (strcmp(pwent->pw_name, user) == 0) {
+			strncpy(userhome, pwent->pw_dir, 126);
+			endpwent();
+			return;
+		}
+	}
+	endpwent();
+	strcpy(userhome, "/"); /* If user doesn't exists return something more/less sane (nobody home?) */
 #endif
 	strncat(userhome, user, 120);
 }
