@@ -54,31 +54,31 @@ int _base64_encode_path(const unsigned char *in, char *out) {
 	if (in == NULL) return -1;
 	if (out == NULL) return -1;
 
-   p = out;
-   leven = 3*(32 / 3);
-   for (i = 0; i < leven; i += 3) {
-       *p++ = codes[(in[0] >> 2) & 0x3F];
-       *p++ = codes[(((in[0] & 3) << 4) + (in[1] >> 4)) & 0x3F];
-       *p++ = codes[(((in[1] & 0xf) << 2) + (in[2] >> 6)) & 0x3F];
-       *p++ = codes[in[2] & 0x3F];
-       in += 3;
-   }
-   /* Pad it if necessary...  */
-   if (i < 32) {
-       unsigned a = in[0];
-       unsigned b = (i+1 < 32) ? in[1] : 0;
+	p = out;
+	leven = 3*(32 / 3);
+	for (i = 0; i < leven; i += 3) {
+		*p++ = codes[(in[0] >> 2) & 0x3F];
+		*p++ = codes[(((in[0] & 3) << 4) + (in[1] >> 4)) & 0x3F];
+		*p++ = codes[(((in[1] & 0xf) << 2) + (in[2] >> 6)) & 0x3F];
+		*p++ = codes[in[2] & 0x3F];
+		in += 3;
+	}
+	/* Pad it if necessary...  */
+	if (i < 32) {
+		unsigned a = in[0];
+		unsigned b = (i+1 < 32) ? in[1] : 0;
 
-       *p++ = codes[(a >> 2) & 0x3F];
-       *p++ = codes[(((a & 3) << 4) + (b >> 4)) & 0x3F];
-       *p++ = (i+1 < 32) ? codes[(((b & 0xf) << 2)) & 0x3F] : '=';
-       *p++ = '=';
-   }
+		*p++ = codes[(a >> 2) & 0x3F];
+		*p++ = codes[(((a & 3) << 4) + (b >> 4)) & 0x3F];
+		*p++ = (i+1 < 32) ? codes[(((b & 0xf) << 2)) & 0x3F] : '=';
+		*p++ = '=';
+	}
 
-   /* append a NULL byte */
-   *p = '\0';
+	/* append a NULL byte */
+	*p = '\0';
 
-   /* return ok */
-   return 0;
+	/* return ok */
+	return 0;
 }
 
 static char * _create_obfuscated_path() {
@@ -234,33 +234,32 @@ void htmlCard(FILE *f, mp_int *nCard) {
 }
 
 void httpSendHeaders(FILE *f, int status, char *title, char *extra, char *mime, int length, time_t date) {
-  time_t now;
-  char timebuf[128];
+	time_t now;
+	char timebuf[128];
 
-  fprintf(f, "%s %d %s\r\n", PROTOCOL, status, title);
-  fprintf(f, "Server: %s\r\n", SERVER);
-  now = time(NULL);
-  strftime(timebuf, sizeof(timebuf), RFC1123FMT, gmtime(&now));
-  fprintf(f, "Date: %s\r\n", timebuf);
-  if (extra) fprintf(f, "%s\r\n", extra);
-  if (mime) fprintf(f, "Content-Type: %s\r\n", mime);
-  if (length >= 0) fprintf(f, "Content-Length: %d\r\n", length);
-  if (date != -1)
-  {
-    strftime(timebuf, sizeof(timebuf), RFC1123FMT, gmtime(&date));
-    fprintf(f, "Last-Modified: %s\r\n", timebuf);
-  }
-  fprintf(f, "Connection: close\r\n");
-  fprintf(f, "\r\n");
+	fprintf(f, "%s %d %s\r\n", PROTOCOL, status, title);
+	fprintf(f, "Server: %s\r\n", SERVER);
+	now = time(NULL);
+	strftime(timebuf, sizeof(timebuf), RFC1123FMT, gmtime(&now));
+	fprintf(f, "Date: %s\r\n", timebuf);
+	if (extra) fprintf(f, "%s\r\n", extra);
+	if (mime) fprintf(f, "Content-Type: %s\r\n", mime);
+	if (length >= 0) fprintf(f, "Content-Length: %d\r\n", length);
+	if (date != -1)	{
+		strftime(timebuf, sizeof(timebuf), RFC1123FMT, gmtime(&date));
+		fprintf(f, "Last-Modified: %s\r\n", timebuf);
+	}
+	fprintf(f, "Connection: close\r\n");
+	fprintf(f, "\r\n");
 }
 
 
 void httpSendError(FILE *f, int status, char *title, char *extra, char *text) {
-  httpSendHeaders(f, status, title, extra, "text/html", -1, -1);
-  fprintf(f, "<HTML><HEAD><TITLE>%d %s</TITLE></HEAD>\r\n", status, title);
-  fprintf(f, "<BODY><H4>%d %s</H4>\r\n", status, title);
-  fprintf(f, "%s\r\n", text);
-  fprintf(f, "</BODY></HTML>\r\n");
+	httpSendHeaders(f, status, title, extra, "text/html", -1, -1);
+	fprintf(f, "<HTML><HEAD><TITLE>%d %s</TITLE></HEAD>\r\n", status, title);
+	fprintf(f, "<BODY><H4>%d %s</H4>\r\n", status, title);
+	fprintf(f, "%s\r\n", text);
+	fprintf(f, "</BODY></HTML>\r\n");
 }
 
 int httpProcess(FILE *f) {

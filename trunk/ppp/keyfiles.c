@@ -67,7 +67,7 @@ static char *_home_dir() {
 	
 	
 	return NULL;
-}                                     
+}
 
 static char *_key_file_dir() {
 	static char fname[128] = "";
@@ -405,7 +405,7 @@ error:
 	mp_clear(&num);
 	return 0;
 }
-    
+
 int writeState() {
 	FILE *fp[2];
 	char buf[128];
@@ -431,7 +431,7 @@ int writeState() {
 
 		_write_data(lastCardGenerated(), fp[1]);
 		fclose(fp[1]);
-                     
+		
 		memset(buf, 0, 128);
 		
 		return 1;

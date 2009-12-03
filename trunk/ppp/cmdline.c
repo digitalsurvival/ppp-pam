@@ -224,8 +224,7 @@ int validPasscode(char *str, int length) {
 	return 1;
 }
 
-void processCommandLine( int argc, char * argv[] )
-{
+void processCommandLine(int argc, char *argv[]) {
 	int c, i, j;
 	
 	static struct option long_options[] = { 
@@ -235,21 +234,21 @@ void processCommandLine( int argc, char * argv[] )
 		{"html",		no_argument,		0, 'h'},
 		{"text",		no_argument,		0, 't'},
 		{"next",		no_argument,		&fNext, 1},
-		{"alphabet",	required_argument,	0, 'a'},
+		{"alphabet",		required_argument,	0, 'a'},
 		{"name",		required_argument,	0, 'm'},
 		{"card",		required_argument,	0, 'c'},
-		{"passphrase",	required_argument,	&fPassphrase, 1},
-		{"passcode",	required_argument,	0, 'p'},
-		{"dontskip",	no_argument,		&fDontSkipFailures, 1},
-		{"dontSkip",	no_argument,		&fDontSkipFailures, 1},
-		{"showpasscode",no_argument,		&fShowPasscode, 1},
-		{"showPasscode",no_argument,		&fShowPasscode, 1},
+		{"passphrase",		required_argument,	&fPassphrase, 1},
+		{"passcode",		required_argument,	0, 'p'},
+		{"dontskip",		no_argument,		&fDontSkipFailures, 1},
+		{"dontSkip",		no_argument,		&fDontSkipFailures, 1},
+		{"showpasscode",	no_argument,		&fShowPasscode, 1},
+		{"showPasscode",	no_argument,		&fShowPasscode, 1},
 		{"verbose",		no_argument, 		0, 'v'},
-		{"useVersion",	required_argument,	0, 'u'},
+		{"useVersion",		required_argument,	0, 'u'},
 		{0, 0, 0, 0}
 	};
 
-    while (1) {
+	while (1) {
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 		c = getopt_long_only(argc, argv, "kshta:m:c:p:vu:", long_options, &option_index);
@@ -381,9 +380,9 @@ void processCommandLine( int argc, char * argv[] )
 	pppClearFlags(PPP_TIME_BASED);
 	fTime = 0;
 	
-    /* validate the command line options */
+	/* validate the command line options */
 
-    if ( ! (fKey | fSkip | fHtml | fText | fTime) ) {
+	if ( ! (fKey | fSkip | fHtml | fText | fTime) ) {
 		errorExitWithUsage("nothing to do!");
 	}
 
