@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright notice,
  *       this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -36,13 +36,13 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <pwd.h>
-            
+
 #include "ppp.h"
 
 #define KEY_BITS (int)256
-                                 
+
 /* IMPORTANT NOTE
- * 
+ *
  * If you update the PPP algorithm in any way, it's important
  * to remain backwards compatibe with older algorithms where
  * people may be relying on them to log into machines.
@@ -50,7 +50,7 @@
  * Set _ppp_ver to the latest version of the algorithm this
  * code can handle, but be sure to never break the handling
  * of older versions in here.
- *                           
+ *
  * When an older keyfile is loaded, _key_ver will contain the
  * version number of the PPP algorithm used to create it.  All
  * processing in here should use the version specified in
@@ -124,12 +124,12 @@ static void _reverse_bytes(unsigned char *buf, int len) {
 
 static void _mp_to_uint(mp_int *mp, unsigned int *i) {
 	utype tell, v;
-	
+
 	tell.val = 0x4d494d49;
 	v.val = 0;
 
 	mp_to_unsigned_bin(mp, v.bytes);
-	
+
 	/* We can't just use htonl() here because it swaps bytes
 	 * on intel (little-endian) platforms and it's motorolla
 	 * (big-endian) platforms where we want to swap bytes.
@@ -137,9 +137,9 @@ static void _mp_to_uint(mp_int *mp, unsigned int *i) {
 	if (tell.bytes[0] == 'M') {
 		_reverse_bytes(v.bytes, 4);
 	}
-	
+
 	*i = v.val;
-	
+
 	v.val = 0;
 }
 
@@ -168,15 +168,15 @@ static char *_extract_passcode_from_block(mp_int *cipherBlock, int n) {
 	_mp_to_bytes(cipherBlock, cipherdata, 16*3);
 
 	int i = n * 3;
-	
+
 	d_passcode[0] = alphabet[(int)(cipherdata[i]&0x3f)];
 	d_passcode[1] = alphabet[(int)(((cipherdata[i]&0xc0)>>6) + ((cipherdata[i+1]&0x0f)<<2))];
 	d_passcode[2] = alphabet[(int)(((cipherdata[i+1]&0xf0)>>4) + ((cipherdata[i+2]&0x03)<<4))];
 	d_passcode[3] = alphabet[(int)((cipherdata[i+2]&0xfc)>>2)];
 	d_passcode[4] = '\x00';
-	
+
 	_zero_bytes(cipherdata, 16*3);
-	
+
 	return d_passcode;
 }
 
@@ -184,21 +184,21 @@ static void _setup_encrypt(mp_int *key) {
 	unsigned char k[32];
 	_mp_to_bytes(key, k, 32);
 	_reverse_bytes(k, 32);
-	
+
 	nRounds = rijndaelSetupEncrypt(rk, k, KEY_BITS);
-	
+
 	_zero_bytes(k, 32);
 }
 
 static void _encrypt(mp_int *plain, mp_int *cipher) {
 	unsigned char p[16];
 	unsigned char c[16];
-	
+
 	_mp_to_bytes(plain, p, 16);
 	_reverse_bytes(p, 16);
 	rijndaelEncrypt(rk, nRounds, p, c);
 	_bytes_to_mp(c, cipher, 16);
-	
+
 	_zero_bytes(p, 16);
 	_zero_bytes(c, 16);
 }
@@ -207,7 +207,7 @@ static void _encrypt(mp_int *plain, mp_int *cipher) {
 static void _compute_passcode_block(mp_int *cipherNum, mp_int *cipherBlock) {
 	unsigned char seqkey[48];
 	_mp_to_bytes(&d_seqKey, seqkey, 48);
-	
+
 	unsigned char *kp = seqkey;
 	if (keyVersion() == 2) {
 		kp += 16;
@@ -281,10 +281,10 @@ void pppInit() {
 	mp_init(&d_currPasscodeNum);
 	d_reserved = 0;
 	mp_init(&d_lastCardGenerated);
-	
+
 	/* Here, we compute the maximum number of passcodes handle by this
 	 * code. This turns out to be less than the theoretical maximum
-	 * because we don't count the ones from the last (incomplete) 
+	 * because we don't count the ones from the last (incomplete)
 	 * passcard.
 	 * max = int(2^128 * 16 / 3 / 70) * 70
 	 */
@@ -306,10 +306,10 @@ void pppCleanup() {
 	mp_clear(&d_currPasscodeNum);
 	mp_clear(&d_lastCardGenerated);
 	mp_clear(&d_maxPasscodes);
-	
+
 	_zero_bytes((unsigned char *)d_passcode, 5);
 	_zero_rijndael_state();
-	
+
 	_zero_bytes((unsigned char *)d_prompt, d_prompt_len);
 	free(d_prompt);
 	_zero_bytes((unsigned char *)d_code, d_code_len);
@@ -340,7 +340,7 @@ char *mpToDecimalString(mp_int *mp, char groupChar) {
 			nCommas--;
 		}
 	}
-	
+
 	if (nCommas > 0) {
 		int i, pos;
 		int offset = nCommas;
@@ -355,7 +355,7 @@ char *mpToDecimalString(mp_int *mp, char groupChar) {
 		}
 	}
 
-	return d_buf;	
+	return d_buf;
 }
 
 char *currCode() {
@@ -370,7 +370,7 @@ char *currCode() {
 	mp_add_d(&mp, 1, &mp);
 	char *cardstr = mpToDecimalString(&mp, ',');
 	mp_sub_d(&mp, 1, &mp);
-	
+
 	mp_mul_d(&mp, 70, &row);
 	mp_sub(currAuthPasscodeNum(), &row, &row);
 	mp_set_int(&mp, 7);
@@ -379,20 +379,20 @@ char *currCode() {
 	_mp_to_uint(&mp, &c);
 	mp_clear(&mp);
 	mp_clear(&row);
-	
+
 	free(d_code);
 	d_code = (char *)malloc(strlen("[]") + strlen(cardstr) + 6);
 	sprintf(d_code, "%d%c [%s]",++r, c+'A', cardstr);
-	
+
 	mp_clear(&row);
 	c = r = 0;
-	
+
 	return d_code;
 }
 
 char *currPrompt() {
 	int length = strlen("Passcode : ") + strlen(currCode()) + 6 + 4;
-	if (lockingFailed) 
+	if (lockingFailed)
 		length += strlen("(no lock) ");
 	free(d_prompt);
 	d_prompt = (char *)malloc(length);
@@ -425,16 +425,18 @@ int pppAuthenticate(const char *attempt) {
 			if (d_reserved) {
 				/* Was reserved, but failed and should be decreased... */
 				/* FIXME: This shouldn't really be used because it causes a security
-				 * bug similar to not using reservation at all. */
+				 * bug similar to not using reservation at all. *
+				 * UPDATE: This will never happen, as pam module doesn't reserve
+				 * passwords if dontSkip is enabled */
 				decrCurrPasscodeNum();
 				writeState();
 			}
 		}
 	}
 	d_reserved = 0;
-	
+
 	_zero_bytes((unsigned char *)d_passcode, 5);
-	
+
 	return rv;
 }
 
@@ -442,9 +444,9 @@ int pppWarning(char *buf, int size) {
 	static int warnNum = 0;
 	mp_int mp;
 	mp_init(&mp);
-	
+
 	buf[0] = '\x00';
-	
+
 	switch (warnNum) {
 	case 0:
 		getNumPrintedCodesRemaining(&mp);
@@ -502,7 +504,7 @@ int pppWarning(char *buf, int size) {
 		warnNum = -1;
 		break;
 	}
-	
+
 	mp_clear(&mp);
 	return ++warnNum;
 }
@@ -554,8 +556,8 @@ void reservePasscodeNum(void) {
 	/* Increment num, so parallel sessions won't reserve the same passCode */
 	/* FIXME: Races should be fixed by some lock file */
 	incrCurrPasscodeNum();
-	writeState(); 
-} 
+	writeState();
+}
 
 mp_int *lastCardGenerated() {
 	return &d_lastCardGenerated;
@@ -588,10 +590,10 @@ void calculateCardContainingPasscode(mp_int *passcodeNum, mp_int *cardNum) {
 
 void generateSequenceKeyFromPassphrase(const char *phrase) {
 	unsigned char bytes[48];
-	
+
 	/* use the current ppp version */
 	setKeyVersion(pppVersion());
-	
+
 	switch (keyVersion()) {
 	case 1:
 		sha384((const unsigned char *)phrase, strlen(phrase), bytes);
@@ -609,7 +611,7 @@ void generateSequenceKeyFromPassphrase(const char *phrase) {
 		/* unsupported */
 		break;
 	}
-	
+
 	pppSetFlags(PPP_FLAGS_PRESENT);
 	zeroCurrPasscodeNum();
 	zeroLastCardGenerated();
@@ -625,7 +627,7 @@ void generateRandomSequenceKey() {
 	for (i=0; i<16; i++) {
 		entropy[i] = uuid[i];
 	}
-	
+
 	uuid_generate_random(uuid);
 	for (i=0; i<16; i++) {
 		entropy[i+16] = uuid[i];
@@ -633,9 +635,9 @@ void generateRandomSequenceKey() {
 
 	/* use the current ppp version */
 	setKeyVersion(pppVersion());
-	
+
 	switch (keyVersion()) {
-  	case 1:
+	case 1:
 		sha384(entropy, 32, bytes);
 		_zero_bytes(entropy, 32);
 		_reverse_bytes(bytes, 48);
@@ -679,7 +681,7 @@ char *getPasscode(const mp_int *n) {
 	_locate_passcode(&N, &cipherNum, &offset);
 	mp_clear(&N);
 
-	/* Get ciphertext block (cipher N, N+1, N+2) 
+	/* Get ciphertext block (cipher N, N+1, N+2)
 	 */
 	mp_int cipherBlock;
 	mp_init(&cipherBlock);
@@ -692,13 +694,13 @@ char *getPasscode(const mp_int *n) {
 	char *passcode = _extract_passcode_from_block(&cipherBlock, ofs);
 	mp_clear(&cipherBlock);
 	ofs = 0;
-	
+
 	return passcode;
 }
 
 void getPasscodeBlock(mp_int *startingPasscodeNum, int qty, char *output) {
 	int i;
-	
+
 	mp_int cipherBlock;
 	mp_init (&cipherBlock);
 
@@ -721,30 +723,30 @@ void getPasscodeBlock(mp_int *startingPasscodeNum, int qty, char *output) {
 	mp_copy(startingPasscodeNum, &passcodeNum);
 	for (i=0; i<qty; i++) {
 		_locate_passcode(&passcodeNum, &cipherNum, &offset);
-		
+
 		if (mp_cmp(&cipherNum, &lastCipherNum) != 0) {
 			_compute_passcode_block(&cipherNum, &cipherBlock);
 			mp_copy(&cipherNum, &lastCipherNum);
 		}
-		
+
 		_mp_to_uint(&offset, &ofs);
 		strncpy(output+4*i, _extract_passcode_from_block(&cipherBlock, ofs), 4);
-		
+
 		mp_add_d(&passcodeNum, 1, &passcodeNum);
 	}
-	
+
 	ofs = 0;
 }
 
 void getNumPrintedCodesRemaining(mp_int *mp) {
 	mp_int last;
 	mp_init(&last);
-	
+
 	mp_int *curr = currPasscodeNum();
 	mp_add_d(lastCardGenerated(), 1 ,&last);
 	mp_mul_d(&last, 70 ,&last);
 	mp_sub(&last, curr, &last);
-	
+
 	mp_copy(&last, mp);
 	mp_clear(&last);
 }
@@ -774,7 +776,7 @@ void setPasscodeAlphabet(const char *a) {
 
 void setKeyVersion(int v) {
 	_key_ver = v;
-	
+
 	// set alphabet based on version
 	switch (keyVersion()) {
 	case 3:

@@ -135,6 +135,7 @@ void usage() {
 		"                     and will only be used until the program exits.\n"
 		"  --dontSkip         Used with --key to specify that on authentication, system\n"
 		"                     will not advance to the next passcode on a failed attempt.\n"
+		"                     **DANGER** To avoid DoS attacks use requisite instead\n"
 		"  --showPasscode     Used with --key to specify that on authentication, system\n"
 		"                     will display passcode as it is typed.\n"
 		"  -v, --verbose      Display more information about what is happening.\n"
@@ -396,10 +397,6 @@ void processCommandLine(int argc, char *argv[]) {
 	fTime = 0;
 	
 	/* validate the command line options */
-	if (fDontSkipFailures) {
-		errorExit("--dontSkip disabled because of security issue 22 (see code.google.com/p/ppp-pam)");
-	}
-
 	if ( ! (fKey | fSkip | fHtml | fLatex | fText | fTime) ) {
 		errorExitWithUsage("nothing to do!");
 	}

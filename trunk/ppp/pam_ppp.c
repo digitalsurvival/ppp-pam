@@ -59,8 +59,33 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **ar
 	int retval;
 	const char *user=NULL;
 
+	/* Module options */
+
+	/* Enforced makes any user without a .pppauth dir
+	 * fail to login */
+	int enforced = 0;	/* Do we enforce OTP logons? */
+	int lock = 1;		/* Is locking enabled? */
+	int secure = 0;		/* Do we allow dontSkip? */
+	int show = 1;		/* Shall we echo entered passcode? 
+				 * 1 - user selected
+				 * 0 - (noshow) echo disabled
+				 * 2 - (show) echo enabled
+				 */
+	for (; argc-- > 0; argv++) {
+		if (strcmp("enforced", *argv) == 0)
+			enforced = 1;
+		else if (strcmp("nolock", *argv) == 0)
+			lock = 0;
+		else if (strcmp("secure", *argv) == 0)
+			secure = 1;
+		else if (strcmp("show", *argv) == 0)
+			show = 2;
+		else if (strcmp("noshow", *argv) == 0)
+			show = 0;
+	}
+
 	/*
-	 * authentication requires we know who the user wants to be
+	 * Authentication requires we know who the user wants to be
 	 */
 	retval = pam_get_user(pamh, &user, NULL);
 	if (retval != PAM_SUCCESS) {
@@ -71,6 +96,10 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **ar
 	if (user == NULL || *user == '\0') {
 		D(("username not known"));
 		pam_set_item(pamh, PAM_USER, (const void *) DEFAULT_USER);
+		/* FIXME: Previous two lines would leave user unmodified
+		 * making it impossible to read ~/.pppauth with null ~ 
+		 * for now - return to safety */
+		return PAM_AUTH_ERR;
 	}
 
 	retval = PAM_AUTH_ERR;
@@ -78,27 +107,43 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **ar
 	pppInit();
 	
 	setUser(user);
-	if ( ! readKeyFile(1)) { /* Read key, and put a lock on it */
-		retval = PAM_IGNORE;
+	if ( ! readKeyFile(lock)) {
+		/* If not enforcing - ignore, otherwise - fail */
+		if (enforced == 0)
+			retval = PAM_IGNORE;
 		goto cleanup;
 	}
 
-	if (!isLocked()) {
+
+	if (secure) {
+		/* Ignore any --dontSkip flags used */
+		pppClearFlags(PPP_DONT_SKIP_ON_FAILURES);
+	}
+
+	/* Lock files */
+	if (lock && !isLocked()) {
 		D(("unable to lock file! Race condition possible."));
 	}
 	
-	/* Reserve the passcode the user will have to type */
-	reservePasscodeNum();
+	/* Reserve the passcode the user will have to type
+	 * if only the user doesn't use --dontSkip option */
+	if (! pppCheckFlags(PPP_DONT_SKIP_ON_FAILURES)) {
+		reservePasscodeNum();
+	}
 
 	/* We have reserved Passcode and saved new file data
 	 * release the locks */
-	doUnlocking();
+	if (lock)
+		doUnlocking();
 	
 	struct pam_conv *conversation;
 	struct pam_message message;
 	struct pam_message *pmessage = &message;
 	struct pam_response *resp = NULL;
-	if (pppCheckFlags(PPP_SHOW_PASSCODE)) {
+
+	/* Echo on if enforced by "show" option or enabled by user
+	 * and not disabled by "noshow" option */
+	if ((show == 2) || (show == 1 && pppCheckFlags(PPP_SHOW_PASSCODE))) {
 		message.msg_style = PAM_PROMPT_ECHO_ON;
 	} else {
 		message.msg_style = PAM_PROMPT_ECHO_OFF;

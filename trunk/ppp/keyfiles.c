@@ -426,6 +426,7 @@ int doUnlocking() {
 
 	close(lock_fd), lock_fd = -1;
 
+	lockingFailed = 0;
 	return 0;
 }
 
