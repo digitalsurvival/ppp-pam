@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright notice,
  *       this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -31,47 +31,50 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <pwd.h>
 #include <ctype.h>
 
 #include "ppp.h"
 
 #include "sha2.h"
-#include "cmdline.h" 
+#include "cmdline.h"
 
 #include "keyfiles.h"
 
-static char *private_key_file_name = "/private_key";
-static char *private_count_file_name = "/private_cnt";
-static char *private_generated_file_name = "/private_gen";
-static char *private_key_dir = "/.pppauth";
+static const char *private_key_file_name = "/private_key";
+static const char *private_count_file_name = "/private_cnt";
+static const char *private_generated_file_name = "/private_gen";
+static const char *private_lock_file_name = "/lock";
+static const char *private_key_dir = "/.pppauth";
 static char userhome[128] = "";
-
+static int lock_fd = -1;
+int lockingFailed = 0;
 
 static char *_home_dir() {
 	static struct passwd *pwdata = NULL;
-	
+
 	if (strlen(userhome) == 0) {
 		/* get home dir for logged-in user */
 		if (pwdata == NULL) {
 			uid_t uid = geteuid();
 			pwdata = getpwuid(uid);
 		}
-	
+
 		if (pwdata) {
 			return pwdata->pw_dir;
 		}
 	} else {
 		return userhome;
 	}
-	
-	
+
+
 	return NULL;
 }
 
 static char *_key_file_dir() {
 	static char fname[128] = "";
-	
+
 	if (strlen(fname) == 0) {
 		strncpy(fname, _home_dir(), 128 - strlen(private_key_file_name) - strlen(private_key_dir) - 1);
 		strncat(fname, private_key_dir, strlen(private_key_dir));
@@ -81,7 +84,7 @@ static char *_key_file_dir() {
 
 static char *_key_file_name() {
 	static char fname[128] = "";
-	
+
 	if (strlen(fname) == 0) {
 		strncpy(fname, _key_file_dir(), 128 - strlen(private_key_file_name) - 1);
 		strncat(fname, private_key_file_name, strlen(private_key_file_name));
@@ -91,7 +94,7 @@ static char *_key_file_name() {
 
 static char *_cnt_file_name() {
 	static char fname[128] = "";
-	
+
 	if (strlen(fname) == 0) {
 		strncpy(fname, _key_file_dir(), 128 - strlen(private_count_file_name) - 1);
 		strncat(fname, private_count_file_name, strlen(private_count_file_name));
@@ -99,9 +102,19 @@ static char *_cnt_file_name() {
 	return fname;
 }
 
+static char *_lock_file_name() {
+	static char fname[128] = "";
+
+	if (strlen(fname) == 0) {
+		strncpy(fname, _key_file_dir(), 128 - strlen(private_lock_file_name) - 1);
+		strncat(fname, private_lock_file_name, strlen(private_lock_file_name));
+	}
+	return fname;
+}
+
 static char *_gen_file_name() {
 	static char fname[128] = "";
-	
+
 	if (strlen(fname) == 0) {
 		strncpy(fname, _key_file_dir(), 128 - strlen(private_generated_file_name) - 1);
 		strncat(fname, private_generated_file_name, strlen(private_generated_file_name));
@@ -109,8 +122,9 @@ static char *_gen_file_name() {
 	return fname;
 }
 
+
 static void _enforce_permissions() {
-	
+
 	chown(_key_file_dir(), -1, 0);
 	chmod(_key_file_dir(), S_IRWXU | S_IRWXG);
 
@@ -122,6 +136,9 @@ static void _enforce_permissions() {
 
 	chown(_gen_file_name(), -1, 0);
 	chmod(_gen_file_name(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+
+	chown(_lock_file_name(), -1, 0);
+	chmod(_lock_file_name(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
 }
 
 static int _file_exists(char *fname) {
@@ -164,10 +181,10 @@ static int _dir_exists(char *fname) {
 
 static int _ppp_version(char *buf) {
 	int ver = -1;
-	
+
 	if (buf[0] != ' ')
 		return 1;
-		
+
 	buf[4] = '\x00';
 	if (strncmp(buf, " PPP", 4) != 0) {
 		/* not a PPP file, so exit */
@@ -176,53 +193,53 @@ static int _ppp_version(char *buf) {
 
 	buf[9] = '\x00';
 	sscanf(buf+5, "%04d", &ver);
-		
+
 	return ver;
 }
 
 static int _data_format(char *buf) {
 	int fmt = -1;
-	
+
 	if (buf[0] != ' ') {
 		/* not a versioned file */
 		return 0;
 	}
-	
+
 	buf[14] = '\x00';
 	sscanf(buf+10, "%04d", &fmt);
-		
+
 	return fmt;
 }
 
 static int _ppp_flags(char *buf) {
 	int flags = 0;
-	
+
 	if (buf[0] != ' ') {
 		/* not a versioned file */
 		pppClearFlags(0xffff);
 		return 0;
 	}
-		
+
 	if (strlen(buf+15) < 5) {
 		/* is not long enough to check for flags */
 		pppClearFlags(0xffff);
 		return 0;
 	}
-	
+
 	if (buf[19] != ' ') {
 		/* file does not contain flags */
 		pppClearFlags(0xffff);
 		return 0;
 	}
-		
+
 	buf[19] = '\x00';
 	sscanf(buf+15, "%04x", &flags);
 	pppSetFlags(PPP_FLAGS_PRESENT);
-	
+
 	return flags;
 }
 
-static void _read_data(char *buf, mp_int *mp) {	
+static void _read_data(char *buf, mp_int *mp) {
 	switch (_data_format(buf)) {
 		case 0:
 			/* unversioned file, mpi radix 64 format */
@@ -248,9 +265,9 @@ static void _read_data(char *buf, mp_int *mp) {
 				mp_read_radix(mp, (unsigned char *)(buf+15), 62);
 			break;
 	}
-	
+
 }
-      
+
 static void _write_data(mp_int *mp, FILE *fp) {
 	char buf[256];
 	/* write ppp identifer */
@@ -259,32 +276,32 @@ static void _write_data(mp_int *mp, FILE *fp) {
 	/* write key version */
 	fprintf(fp, "%04d", keyVersion());
 	fwrite(" ", 1, 1, fp);
-	
-	/* Current data format is versioned file, 
-	 * mpi radix 62. 
+
+	/* Current data format is versioned file,
+	 * mpi radix 62.
 	 */
 	int current_data_format = 2;
 
 	/* write data format */
 	fprintf(fp, "%04d", current_data_format);
-	fwrite(" ", 1, 1, fp); 
-	
+	fwrite(" ", 1, 1, fp);
+
 	/* write flags */
 	fprintf(fp, "%04x", pppCheckFlags(0xffff));
 	fwrite(" ", 1, 1, fp);
 
 	/* IMPORTANT NOTE:
 	 *
-	 * If you change current_data_format above, 
+	 * If you change current_data_format above,
 	 * make sure you:
-	 * 
+	 *
 	 * 1. Update the code below that writes the data to
 	 *    reflect the data format you specified in
 	 *    current_data_format above.
 	 * 2. Add compatible read code to the switch statement
 	 * in _read_data() above.
 	 */
-	              
+
 	/* mpi radix 62 is the data format du jour */
 	mp_toradix(mp, (unsigned char *)buf, 62);
 	fwrite(buf, 1, strlen(buf)+1, fp);
@@ -292,7 +309,7 @@ static void _write_data(mp_int *mp, FILE *fp) {
 
 static int confirm(char *prompt) {
 	char buf[1024], *p;
-	
+
 	do {
 		/* Display the prompt (on stderr because stdout might be redirected). */
 		fflush(stdout);
@@ -321,10 +338,10 @@ static int confirm(char *prompt) {
 }
 
 void setUser(const char *user) {
-#ifdef OS_IS_MACOSX	
+#ifdef OS_IS_MACOSX
 	strncpy(userhome, "/Users/", 7);
 #endif
-#ifdef OS_IS_LINUX	
+#ifdef OS_IS_LINUX
 	const struct passwd *pwent;
 	while ((pwent = getpwent()) != NULL) {
 		if (strcmp(pwent->pw_name, user) == 0) {
@@ -343,28 +360,103 @@ int keyfileExists() {
 	return _file_exists(_key_file_name());
 }
 
-int readKeyFile() {
+
+int doLocking() {
+	const char *filename = _lock_file_name();
+	struct flock fl;
+	int ret;
+	int cnt;
+
+	fl.l_type = F_WRLCK;
+	fl.l_whence = SEEK_SET;
+	fl.l_start = fl.l_len = 0;
+
+	lock_fd = open(filename, O_CREAT | O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+	if (lock_fd == -1) {
+		return 0; /* Unable to create file, therefore unable to obtain lock */
+	}
+
+	/*
+	 * Trying to lock the file 20 times.
+	 * Any working ppp-pam session shouldn't lock it for so long.
+	 *
+	 * Therefore we have to options. Fail each login if we can't get the lock
+	 * or ignore locking (we can get a race condition then) but try to
+	 * authenticate the user nevertheless.
+	 *
+	 * I'll stick to the second option for now.
+	 *
+	 */
+	for (cnt = 0; cnt < 20; cnt++) {
+		ret = fcntl(lock_fd, F_SETLK, &fl);
+		if (ret == 0)
+			break;
+		usleep(700);
+	}
+
+	if (ret != 0) {
+		/* Unable to lock for 10 times */
+		close(lock_fd), lock_fd = -1;
+		return 0;
+	}
+
+	return 1; /* Got lock */
+}
+
+int doUnlocking() {
+	struct flock fl;
+
+	if (lock_fd < 0)
+		return 1; /* No lock to release */
+
+	fl.l_type = F_UNLCK;
+	fl.l_whence = SEEK_SET;
+	fl.l_start = fl.l_len = 0;
+
+	if (fcntl(lock_fd, F_SETLK, &fl) != 0) {
+		/* Strange error while releasing the lock */
+		return 2;
+	}
+
+	close(lock_fd), lock_fd = -1;
+
+	return 0;
+}
+
+int isLocked() {
+	if (lock_fd == -1)
+		return 0;
+	else
+		return 1;
+}
+
+int readKeyFile(int lock) {
 	FILE *fp;
 	char buf[128];
 	mp_int num;
 	int ver[3];
-	
+
 	if ( ! _file_exists(_key_file_name()) )
 		return 0;
 
 	if ( ! _file_exists(_cnt_file_name()) )
 		return 0;
-	
+
 	if ( ! _file_exists(_gen_file_name()) )
 		return 0;
-	
+
 	fp = fopen(_key_file_name(), "r");
-	if ( ! fp) 
+	if ( ! fp)
 		return 0;
 
-	/* fread can fail; then strlen used in 
+	/* If file is opened we can do authentication and there's a directory
+	 * where we can hold lock file */
+	if (lock)
+		lockingFailed = doLocking();
+
+	/* fread can fail; then strlen used in
 	 * _ppp_flags might not work as supposed.
-	 * It would be best to check values returned by 
+	 * It would be best to check values returned by
 	 * fread() each time it's used.
 	 */
 	memset(buf, 0, sizeof(buf));
@@ -373,13 +465,13 @@ int readKeyFile() {
 	fclose(fp);
 	ver[0] = _ppp_version(buf);
 	pppSetFlags(_ppp_flags(buf)); /* load flags */
-	
+
 	mp_init(&num);
 	_read_data(buf, &num);
 	setSeqKey(&num);
 
 	fp = fopen(_cnt_file_name(), "r");
-	if ( ! fp) 
+	if ( ! fp)
 		goto error;
 	fread(buf, 1, sizeof(buf), fp);
 	fclose(fp);
@@ -388,7 +480,7 @@ int readKeyFile() {
 	setCurrPasscodeNum(&num);
 
 	fp = fopen(_gen_file_name(), "r");
-	if ( ! fp) 
+	if ( ! fp)
 		goto error;
 	fread(buf, 1, sizeof(buf), fp);
 	ver[2] = _ppp_version(buf);
@@ -398,7 +490,7 @@ int readKeyFile() {
 
 	memset(buf, 0, sizeof(buf));
 	mp_clear(&num);
-	
+
 	if ( (ver[0] != ver[1]) || (ver[1] != ver[2]) ) {
 		/* Inconsistency in PPP version among the three data files */
 		goto error;
@@ -412,6 +504,8 @@ int readKeyFile() {
 error:
 	memset(buf, 0, sizeof(buf));
 	mp_clear(&num);
+	if (lock)
+		doUnlocking();
 	return 0;
 }
 
@@ -420,7 +514,7 @@ int writeState() {
 
 	if ( ! _dir_exists(_key_file_dir()) )
 		return 0;
-		
+
 	if ( ! pppCheckFlags(PPP_FLAGS_PRESENT)) {
 		/* Update the key file to include flags */
 		pppSetFlags(PPP_FLAGS_PRESENT);
@@ -430,7 +524,7 @@ int writeState() {
 			fclose(fp[0]);
 		}
 	}
-		
+
 	fp[0] = fopen(_cnt_file_name(), "w");
 	fp[1] = fopen(_gen_file_name(), "w");
 	if (fp[0] && fp[1]) {
@@ -447,7 +541,7 @@ int writeState() {
 		if (fp[1])
 			fclose(fp[1]);
 	}
-	
+
 	return 0;
 }
 
@@ -455,12 +549,12 @@ int writeKeyFile() {
 	FILE *fp[3];
 	char buf[128];
 	int proceed = 1;
-	
+
 	/* create ~/.pppauth if necessary */
 	if ( ! _dir_exists(_key_file_dir()) ) {
 		mkdir(_key_file_dir(), S_IRWXU);
 	}
-       
+
 	/* warn about overwriting an existing key */
 	if ( _file_exists(_key_file_name()) ) {
 		proceed = 0;
@@ -478,13 +572,13 @@ int writeKeyFile() {
 			"passcards.  New passcards must be printed.\n"
 			"\n"
 		);
-		
+
 		proceed = confirm("Are you sure you want to proceed (yes/no)? ");
 	}
 
 	if (proceed) {
 		_enforce_permissions();
-	
+
 		umask(S_IRWXG|S_IRWXO);
 		fp[0] = fopen(_key_file_name(), "w");
 		fp[1] = fopen(_cnt_file_name(), "w");
@@ -498,9 +592,9 @@ int writeKeyFile() {
 
 			_write_data(lastCardGenerated(), fp[2]);
 			fclose(fp[2]);
-			
+
 			memset(buf, 0, 128);
-			
+
 			fprintf(stderr, "\n"
 				"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n"
 				"  A new sequence key has been generated and saved.  It is\n"
@@ -521,6 +615,6 @@ int writeKeyFile() {
 			"\n"
 		);
 	}
-	
+
 	return 0;
 }
