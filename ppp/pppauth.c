@@ -107,7 +107,7 @@ int main( int argc, char * argv[] )
 		mp_int newNum;
 		mp_init(&newNum);
 		calculatePasscodeNumberFromCardColRow(&cardNum, 0, 0, &newNum);
-		if (fPasscode) {
+		if (fPasscode && !fPasscodeCurr) {
 			calculatePasscodeNumberFromCardColRow(&cardNum, colNum, rowNum, &newNum);
 		}
 		
@@ -145,7 +145,7 @@ int main( int argc, char * argv[] )
 	/* Calculate specified passcode number */
 	if ( ! fSkip && (fCard || fPasscode) ) {
 		calculatePasscodeNumberFromCardColRow(&cardNum, 0, 0, &n);
-		if (fPasscode) {
+		if (fPasscode && !fPasscodeCurr) {
 			calculatePasscodeNumberFromCardColRow(&cardNum, colNum, rowNum, &n);
 		}
 		// if (fVerbose) {
@@ -199,7 +199,11 @@ int main( int argc, char * argv[] )
 			}
 		} else {
 			if (fPasscode) {
-				printf("%s\n", getPasscode(&n));
+				if (fPasscodeCurr) {
+					printf("%s: %s\n", currCode(), getPasscode(currPasscodeNum()));
+				} else {
+					printf("%s\n", getPasscode(&n));
+				}
 			} else {
 				if (fLatex)
 					latexCard(&cardNum);

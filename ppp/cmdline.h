@@ -47,6 +47,7 @@ extern int fRow;
 extern int fCol;
 extern int fPassphrase;
 extern int fPasscode;
+extern int fPasscodeCurr;
 extern int fVerbose;
 extern int fUseVersion;
 extern int numCards;
