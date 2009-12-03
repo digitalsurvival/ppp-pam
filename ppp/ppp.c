@@ -78,7 +78,7 @@ static int nRounds = 0;
 static mp_int d_seqKey;
 static mp_int d_currPasscodeNum;
 static mp_int d_reservedPasscodeNum;
-static char d_reserved = 0;
+static char d_reserved;
 
 static mp_int d_lastCardGenerated;
 static mp_int d_maxPasscodes;
@@ -279,6 +279,7 @@ static void _compute_passcode_block(mp_int *cipherNum, mp_int *cipherBlock) {
 void pppInit() {
 	mp_init(&d_seqKey);
 	mp_init(&d_currPasscodeNum);
+	d_reserved = 0;
 	mp_init(&d_lastCardGenerated);
 	
 	/* Here, we compute the maximum number of passcodes handle by this
@@ -362,24 +363,16 @@ char *currCode() {
 	mp_int row;
 	unsigned int c, r;
 
-	mp_int *passcodeNum;
-
-	if (d_reserved) {
-		passcodeNum = reservedPasscodeNum();
-	} else {
-		passcodeNum = currPasscodeNum();
-	}
-
 	mp_init(&mp);
 	mp_init(&row);
 
-	calculateCardContainingPasscode(passcodeNum, &mp);
+	calculateCardContainingPasscode(currAuthPasscodeNum(), &mp);
 	mp_add_d(&mp, 1, &mp);
 	char *cardstr = mpToDecimalString(&mp, ',');
 	mp_sub_d(&mp, 1, &mp);
 	
 	mp_mul_d(&mp, 70, &row);
-	mp_sub(currPasscodeNum(), &row, &row);
+	mp_sub(currAuthPasscodeNum(), &row, &row);
 	mp_set_int(&mp, 7);
 	mp_div(&row, &mp, &row, &mp);
 	_mp_to_uint(&row, &r);
@@ -408,42 +401,30 @@ char *currPrompt() {
 
 int pppAuthenticate(const char *attempt) {
 	int rv = 0;
-	mp_int *passcodeNum;
 
-	if (d_reserved) {
-		passcodeNum = reservedPasscodeNum();
-	} else {
-		passcodeNum = currPasscodeNum();
-	}
-
-	if (strcmp(getPasscode(passcodeNum), attempt) == 0) {
+	if (strcmp(getPasscode(currAuthPasscodeNum()), attempt) == 0) {
 		rv = 1;
-		if (d_reserved) {
-			/* Already was incremented */
-			d_reserved = 0;
-		} else {
-			/* Increment now */
+		if (!d_reserved) {
+			/* Increment now, wasn't incremented before */
 			incrCurrPasscodeNum();
 			writeState();
 		}
 	} else {
 		if ( ! pppCheckFlags(PPP_DONT_SKIP_ON_FAILURES)) {
-			if (d_reserved) {
-				/* Was reserved, but failed */
-				d_reserved = 0;
-			} else {
+			if (!d_reserved) {
+				/* Increment now */
 				incrCurrPasscodeNum();
 				writeState();
 			}
 		} else {
 			if (d_reserved) {
 				/* Was reserved, but failed and should be decreased... */
-				d_reserved = 0;
 				decrCurrPasscodeNum();
 				writeState();
 			}
 		}
 	}
+	d_reserved = 0;
 	
 	_zero_bytes((unsigned char *)d_passcode, 5);
 	
@@ -527,9 +508,20 @@ void setSeqKey(mp_int *mp) {
 	mp_copy(mp, &d_seqKey);
 }
 
+mp_int *currAuthPasscodeNum() {
+	/* Return passcode which must be used for authentication */
+	if (d_reserved) {
+		return &d_reservedPasscodeNum;
+	} else {
+		return &d_currPasscodeNum;
+	}
+}
+
 mp_int *currPasscodeNum() {
+	/* Return passcode */
 	return &d_currPasscodeNum;
 }
+
 
 void setCurrPasscodeNum(const mp_int *mp) {
 	mp_copy(mp, &d_currPasscodeNum);
@@ -551,16 +543,12 @@ void decrCurrPasscodeNum() {
 void reservePasscodeNum(void) {
 	mp_copy(&d_currPasscodeNum, &d_reservedPasscodeNum);
 	d_reserved = 1;
+
+	/* Increment num, so parallel sessions won't reserve the same passCode */
+	/* FIXME: Races should be fixed by some lock file */
 	incrCurrPasscodeNum();
 	writeState(); 
-	/* So parallel sessions won't reserve the same passCode */
-	/* FIXME: Races should be fixed by some lock file */
 } 
-
-mp_int *reservedPasscodeNum(void) {
-	return &d_reservedPasscodeNum;
-} 
-
 
 mp_int *lastCardGenerated() {
 	return &d_lastCardGenerated;
