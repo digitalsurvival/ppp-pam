@@ -1,4 +1,4 @@
-/* Copyright (c) 2007, Thomas Fors
+/* Copyright (c) 2007, Tomasz bla Fortuna
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,44 +26,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _CMDLINE_H_
-#define _CMDLINE_H_
+#ifndef _LATEX_H_
+#define _LATEX_H_
 
+#include "ppp.h"
 #include "mpi.h"
-
-extern int fKey;
-extern int fTime;
-extern int fSkip;
-extern int fHtml;
-extern int fText;
-extern int fLatex;
-extern int fNext;
-extern int fAlphabet;
-extern int fName;
-extern int fCard;
-extern int fDontSkipFailures;
-extern int fShowPasscode;
-extern int fRow;
-extern int fCol;
-extern int fPassphrase;
-extern int fPasscode;
-extern int fVerbose;
-extern int fUseVersion;
-extern int numCards;
-
-extern mp_int cardNum;
-extern int rowNum;
-extern int colNum;
-
-void clInit(char *argv0);
-void clCleanup();
-char *progname();
-char *hostname();
-void processCommandLine( int argc, char * argv[] );
-void errorExitWithUsage(char *msg);
-void errorExit(char *msg);
-void errorMessage(char *msg);
-char *getPassphrase();
-void usage();
+          
+void latexInit();
+void latexCleanup();
+void latexKey (mp_int *key);
+void latexCard(mp_int *nCard);
 
 #endif

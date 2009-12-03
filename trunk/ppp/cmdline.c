@@ -42,6 +42,7 @@ int fTime = 0;
 int fSkip = 0;
 int fHtml = 0;
 int fText = 0;
+int fLatex = 0;
 int fNext = 0;
 int fAlphabet = 0;
 int fName = 0;
@@ -114,6 +115,8 @@ void usage() {
 		"  -s, --skip         Skip to --passcode or to --card specified.\n"
 		"  -h, --html         Generate html passcards for printing.\n"
 		"  -t, --text         Generate text passcards for printing.\n"
+		"  -l, --latex        Generates latex file consisting of 6 passcards\n"
+		"                     starting at the one specified with -c\n"
 		"  -m, --name <name>  Specify hostname to use for printing passcards.\n"
 		"  --next <num>       Generate next <num> consecutive passcards from current\n"
 		"                     active passcode for printing.\n"
@@ -233,6 +236,7 @@ void processCommandLine(int argc, char *argv[]) {
 		{"skip",   		no_argument,		0, 's'},
 		{"html",		no_argument,		0, 'h'},
 		{"text",		no_argument,		0, 't'},
+		{"latex",		no_argument,		0, 'l'},
 		{"next",		no_argument,		&fNext, 1},
 		{"alphabet",		required_argument,	0, 'a'},
 		{"name",		required_argument,	0, 'm'},
@@ -251,7 +255,7 @@ void processCommandLine(int argc, char *argv[]) {
 	while (1) {
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
-		c = getopt_long_only(argc, argv, "kshta:m:c:p:vu:", long_options, &option_index);
+		c = getopt_long_only(argc, argv, "kshtla:m:c:p:vu:", long_options, &option_index);
   
 		/* Detect the end of the options. */
 		if (c == -1)
@@ -279,6 +283,9 @@ void processCommandLine(int argc, char *argv[]) {
 				break;
 			case 't':
 				fText = 1;
+				break;
+			case 'l':
+				fLatex = 1;
 				break;
 			case 'a':
 				setPasscodeAlphabet(optarg);
@@ -382,7 +389,7 @@ void processCommandLine(int argc, char *argv[]) {
 	
 	/* validate the command line options */
 
-	if ( ! (fKey | fSkip | fHtml | fText | fTime) ) {
+	if ( ! (fKey | fSkip | fHtml | fLatex | fText | fTime) ) {
 		errorExitWithUsage("nothing to do!");
 	}
 
@@ -390,8 +397,8 @@ void processCommandLine(int argc, char *argv[]) {
 		errorExitWithUsage("cannot specify `--passcode' and `--card' together");
 	} 
 
-	if (fHtml && fText) {
-		errorExitWithUsage("cannot specify `--html' and `--text' together");
+	if (fHtml + fText + fLatex > 1) {
+		errorExitWithUsage("cannot specify `--html', `--text' and '--latex' together");
 	}
 	
 	if (fSkip && !(fPasscode || fCard)) {

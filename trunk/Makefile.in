@@ -111,6 +111,7 @@ bin_PROGRAMS = pppauth
 pppauth_SOURCES = \
 	./$(srcdir)/ppp/pppauth.c ./$(srcdir)/ppp/cmdline.h ./$(srcdir)/ppp/cmdline.c \
 	./$(srcdir)/ppp/print.h ./$(srcdir)/ppp/print.c ./$(srcdir)/ppp/http.h ./$(srcdir)/ppp/http.c \
+	./$(srcdir)/ppp/latex.h ./$(srcdir)/ppp/latex.c \
 	$(PPPSRC) $(MPISRC)
 
 pppauth_LDADD = $(UUID_LIBS)
@@ -130,6 +131,7 @@ CLEANFILES = logtab.h mpi-types.h dummy.c testvectors.txt testoutput.txt
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 bin_PROGRAMS = pppauth$(EXEEXT)
 noinst_PROGRAMS = pam_ppp.so$(EXEEXT)
@@ -149,14 +151,14 @@ am__objects_3 = pppauth-keyfiles.$(OBJEXT) pppauth-ppp.$(OBJEXT) \
 am__objects_4 = pppauth-dummy.$(OBJEXT) pppauth-mpi.$(OBJEXT) \
 	pppauth-mpprime.$(OBJEXT)
 am_pppauth_OBJECTS = pppauth-pppauth.$(OBJEXT) pppauth-cmdline.$(OBJEXT) \
-	pppauth-print.$(OBJEXT) pppauth-http.$(OBJEXT) $(am__objects_3) \
+	pppauth-latex.$(OBJEXT) pppauth-print.$(OBJEXT) pppauth-http.$(OBJEXT) $(am__objects_3) \
 	$(am__objects_4)
 pppauth_OBJECTS = $(am_pppauth_OBJECTS)
 pppauth_DEPENDENCIES =
 pppauth_LDFLAGS =
 
 DEFS = @DEFS@
-DEFAULT_INCLUDES =  -I. -I$(srcdir)
+DEFAULT_INCLUDES =  -I. -I$(srcdir) -I.
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
@@ -179,6 +181,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/pppauth-ppp.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/pppauth-pppauth.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/pppauth-print.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pppauth-latex.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/pppauth-rijndael.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/pppauth-sha2.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -191,11 +194,12 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 CFLAGS = @CFLAGS@
 DIST_SOURCES = $(pam_ppp_so_SOURCES) $(pppauth_SOURCES)
 DIST_COMMON = AUTHORS Makefile.am Makefile.in aclocal.m4 compile \
-	config.guess config.sub configure configure.in depcomp \
-	install-sh ltmain.sh missing mkinstalldirs
+	config.guess config.h.in config.sub configure configure.in \
+	depcomp install-sh ltmain.sh missing mkinstalldirs
 SOURCES = $(pam_ppp_so_SOURCES) $(pppauth_SOURCES)
 
-all: all-am
+all: config.h
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
@@ -215,6 +219,23 @@ $(srcdir)/configure:  $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENC
 
 $(ACLOCAL_M4):  configure.in 
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
+
+config.h: stamp-h1
+	@if test ! -f $@; then \
+	  rm -f stamp-h1; \
+	  $(MAKE) stamp-h1; \
+	else :; fi
+
+stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
+	@rm -f stamp-h1
+	cd $(top_builddir) && $(SHELL) ./config.status config.h
+
+$(srcdir)/config.h.in:  $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOHEADER)
+	touch $(srcdir)/config.h.in
+
+distclean-hdr:
+	-rm -f config.h stamp-h1
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
@@ -265,6 +286,7 @@ pam_ppp.so$(EXEEXT): $(pam_ppp_so_OBJECTS) $(pam_ppp_so_DEPENDENCIES)
 pppauth-pppauth.$(OBJEXT): ./$(srcdir)/ppp/pppauth.c
 pppauth-cmdline.$(OBJEXT): ./$(srcdir)/ppp/cmdline.c
 pppauth-print.$(OBJEXT): ./$(srcdir)/ppp/print.c
+pppauth-latex.$(OBJEXT): ./$(srcdir)/ppp/latex.c
 pppauth-http.$(OBJEXT): ./$(srcdir)/ppp/http.c
 pppauth-keyfiles.$(OBJEXT): ./$(srcdir)/ppp/keyfiles.c
 pppauth-ppp.$(OBJEXT): ./$(srcdir)/ppp/ppp.c
@@ -300,6 +322,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-ppp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-pppauth.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-print.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-latex.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-rijndael.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pppauth-sha2.Po@am__quote@
 
@@ -504,6 +527,24 @@ pppauth-cmdline.lo: ./$(srcdir)/ppp/cmdline.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-cmdline.lo `test -f './$(srcdir)/ppp/cmdline.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/cmdline.c
 
+pppauth-latex.o: ./$(srcdir)/ppp/latex.c
+@AMDEP_TRUE@	source='./$(srcdir)/ppp/latex.c' object='pppauth-latex.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-latex.Po' tmpdepfile='$(DEPDIR)/pppauth-latex.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-latex.o `test -f './$(srcdir)/ppp/latex.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/latex.c
+
+pppauth-latex.obj: ./$(srcdir)/ppp/latex.c
+@AMDEP_TRUE@	source='./$(srcdir)/ppp/latex.c' object='pppauth-latex.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-latex.Po' tmpdepfile='$(DEPDIR)/pppauth-latex.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-latex.obj `cygpath -w ./$(srcdir)/ppp/latex.c`
+
+pppauth-latex.lo: ./$(srcdir)/ppp/latex.c
+@AMDEP_TRUE@	source='./$(srcdir)/ppp/latex.c' object='pppauth-latex.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-latex.Plo' tmpdepfile='$(DEPDIR)/pppauth-latex.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pppauth_CFLAGS) $(CFLAGS) -c -o pppauth-latex.lo `test -f './$(srcdir)/ppp/latex.c' || echo '$(srcdir)/'`./$(srcdir)/ppp/latex.c
+
 pppauth-print.o: ./$(srcdir)/ppp/print.c
 @AMDEP_TRUE@	source='./$(srcdir)/ppp/print.c' object='pppauth-print.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/pppauth-print.Po' tmpdepfile='$(DEPDIR)/pppauth-print.TPo' @AMDEPBACKSLASH@
@@ -691,11 +732,11 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	       END { for (i in files) print i; }'`; \
 	mkid -fID $$unique
 
-TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+TAGS:  $(HEADERS) $(SOURCES) config.h.in $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	tags=; \
 	here=`pwd`; \
-	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	list='$(SOURCES) $(HEADERS) config.h.in $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
 	  done | \
@@ -802,7 +843,7 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(PROGRAMS) config.h
 
 installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
@@ -840,7 +881,8 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool \
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 distclean-am: clean-am distclean-compile distclean-depend \
-	distclean-generic distclean-libtool distclean-tags
+	distclean-generic distclean-hdr distclean-libtool \
+	distclean-tags
 
 dvi: dvi-am
 
@@ -875,15 +917,16 @@ uninstall-am: uninstall-binPROGRAMS uninstall-info-am
 .PHONY: GTAGS all all-am check check-am clean clean-binPROGRAMS \
 	clean-generic clean-libtool clean-noinstPROGRAMS dist dist-all \
 	dist-gzip distcheck distclean distclean-compile \
-	distclean-depend distclean-generic distclean-libtool \
-	distclean-tags distcleancheck distdir dvi dvi-am info info-am \
-	install install-am install-binPROGRAMS install-data \
-	install-data-am install-exec install-exec-am install-exec-local \
-	install-info install-info-am install-man install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool tags uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-info-am
+	distclean-depend distclean-generic distclean-hdr \
+	distclean-libtool distclean-tags distcleancheck distdir dvi \
+	dvi-am info info-am install install-am install-binPROGRAMS \
+	install-data install-data-am install-exec install-exec-am \
+	install-exec-local install-info install-info-am install-man \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	tags uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-info-am
 
 
 dummy.c: logtab.h mpi-types.h
@@ -916,7 +959,8 @@ test: pppauth
 
 install-exec-local:
 @OSX_TRUE@	cp pam_ppp.so /usr/lib/pam/pam_ppp.so
-@OSX_FALSE@	mkdir -p $(DESTDIR)/lib/security; cp pam_ppp.so $(DESTDIR)/lib/security/pam_ppp.so
+@OSX_FALSE@	mkdir -p $(DESTDIR)/lib/security/
+@OSX_FALSE@	cp pam_ppp.so $(DESTDIR)/lib/security/pam_ppp.so
 
 maintclean:
 	- make clean
