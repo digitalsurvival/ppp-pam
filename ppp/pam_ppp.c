@@ -29,6 +29,8 @@
 #define DEFAULT_USER "nobody"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "ppp.h"
 
@@ -46,7 +48,33 @@
 
 #ifdef HAVE_SECURITY_PAM_MODULES_H
 	#include <security/pam_modules.h>
+#ifdef __APPLE_CC__
+  #include <security/pam_appl.h>
+  /* MacOS X doesn't have this macro defined, so define it like the
+     OpenPAM source does. */
+  #define _pam_drop_reply(aresp, n)                          \
+    {                                                        \
+    int i;                                                   \
+    for(i = 0; i < (n); ++i)                                 \
+      {                                                      \
+      if((aresp)[i].resp != NULL)                            \
+        {                                                    \
+        memset((aresp)[i].resp, 0, strlen((aresp)[i].resp)); \
+        free((aresp)[i].resp);                               \
+        (aresp)[i].resp = NULL;                              \
+        }                                                    \
+      }                                                      \
+                                                             \
+    memset((aresp), 0, (n) * sizeof *(aresp));               \
+    free((aresp));                                           \
+    (aresp) = NULL;                                          \
+    }
+
+  /* MacOS X doesn't have this macro. */
+  #define D(K)
+#else
 	#include <security/_pam_macros.h>
+#endif
 #else	
 	#include <pam/pam_modules.h>
 	#include <pam/pam_mod_misc.h>
