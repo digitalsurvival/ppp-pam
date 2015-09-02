@@ -1,4 +1,4 @@
-= Intro =
+## Intro ##
 A one-time password (OTP) is a password that is only valid for a
 single login session or transaction. OTPs avoid a number of
 shortcomings that are associated with traditional (static)
@@ -28,16 +28,16 @@ server                            [12]
 10: Nuu! stWi iDDH aSug fRvc aFDB FeER
 
 Example usage:
-user@host $ ssh user@server
+user@host $ `ssh user@server`
 Password: <user unix password>
 Passcode 3B [12]: F@p2
 
 user@server $
 
+## Installation ##
 
-
-== Installation ==
 To enable OTP for your ssh you have to:
+
 1. Install the package
 2. Enable its use in /etc/pam.d
 3. Configure ssh to use PAM.
@@ -47,9 +47,9 @@ So.
 
 1) Package can be installed using your distribution repository, 
 or in classical way:
-./configure
-make
-make install 
+`./configure`
+`make`
+`make install` 
 
 2) For exemplary PAM config see pam.d/otp-config.
 
@@ -69,10 +69,10 @@ UsePAM yes
 4) To generate key, and display first passcard as fast as possible (so
 you won't loose ability to login in case you're configuring OTP
 remotely) you can use:
-$ pppauth --key; pppauth --text --next 1
+$ `pppauth --key; pppauth --text --next 1`
 
+## About PAM (short version) ##
 
-== About PAM (short version) ==
 Most application which require password input check
 the password using PAM. I'll stick to the sshd as an example.
 
@@ -166,14 +166,14 @@ account    include        system-remote-login
 password   include        system-remote-login
 session    include        system-remote-login
 
-== Generating the key ==
+## Generating the key ##
+
 Typing as user the following command:
-$ pppauth -k 
+$ `pppauth -k `
 Will create ~/.pppauth directory, generate key
 and enable OTP for user.
 
-After generating key it's important to print yourself
-a card of passwords:
+After generating key it's important to print yourself a card of passwords:
 $ pppauth -t -c 1
 Copy/paste/print (or use pppauth -t -c 1 | lp) Or...
 $ pppauth -h -c 1
