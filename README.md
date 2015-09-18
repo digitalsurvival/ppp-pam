@@ -186,7 +186,7 @@ And use a browser to print a card.
 
 Or:
 
-$ pppauth -l -c 1 > file.latex
-$ pdflatex file.latex
+1. <kbd>pppauth -l -c 1 > file.latex</kbd>
+2. <kbd>pdflatex file.latex</kbd>
 
-And then print file.pdf containing 6 cards.
+And then print the `file.pdf` containing 6 cards.
