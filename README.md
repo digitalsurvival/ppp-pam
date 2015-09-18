@@ -1,4 +1,4 @@
-## Intro ##
+## Introduction ##
 
 A one-time password (OTP) is a password that is only valid for a single login session or transaction. OTPs avoid a number of shortcomings that are associated with traditional (static) passwords: in contrast to static passwords, they are not vulnerable to replay attacks. This means that, if a potential intruder manages to record an OTP that was already used to log into a service or to conduct a transaction, he will not be able to abuse it since it will be no longer valid. On the downside, OTPs cannot be memorized by human beings. -- Wikipedia
 
@@ -39,13 +39,13 @@ To enable OTP for ssh sessions:
 
 So:
 
-### 1) Package can be installed from the distribution's package repository, or via the classical three step process: ###
+#### 1) Package can be installed from the distribution's package repository, or via the classical three step process: ####
 
  1. <kbd>./configure</kbd>
  2. <kbd>make</kbd>
  3. <kbd>make install</kbd>
 
-### 2) For exemplary PAM config see pam.d/otp-config. ###
+#### 2) For exemplary PAM config see pam.d/otp-config. ####
 
 PAM module supports following options:
 
@@ -55,13 +55,13 @@ PAM module supports following options:
 * show       - always use passcodes (ignore user options).
 * noshow     - never show passcodes (ignore user options).
 
-### 3) In /etc/ssh/sshd_config you should have the following two lines: ###
+#### 3) In /etc/ssh/sshd_config you should have the following two lines: ####
 
 <code>ChallengeResponseAuthentication yes</code>
 
 <code>UsePAM yes</code>
 
-### 4) To generate key, and display first passcard as fast as possible (so you won't loose ability to login in case you're configuring OTP remotely) you can use: ###
+#### 4) To generate key, and display first passcard as fast as possible (so you won't loose ability to login in case you're configuring OTP remotely) you can use: ####
 
 <kbd>pppauth --key; pppauth --text --next 1</kbd>
 
